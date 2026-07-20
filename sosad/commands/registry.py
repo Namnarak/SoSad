@@ -83,7 +83,7 @@ class CommandRegistry:
         builders: list[hikari.SnowflakeBasedJSONBuilder[Any]] = []
 
         for meta in self._commands.values():
-            builder = hikari.api.CommandBuilder()
+            builder = hikari.impl.CommandBuilder()
             builder.name = meta.name
             builder.description = meta.description
             builder.type = hikari.CommandType.SLASH
@@ -115,7 +115,7 @@ class CommandRegistry:
             builders.append(builder)
 
         for group_name, group_meta in self._groups.items():
-            builder = hikari.api.CommandBuilder()
+            builder = hikari.impl.CommandBuilder()
             builder.name = group_name
             builder.description = group_meta.description
             builder.type = hikari.CommandType.SLASH
