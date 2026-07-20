@@ -192,19 +192,16 @@ class Client(BaseClient):
 
         # Always sync global commands
         result = await syncer.sync()
-        logger.info(
-            "Global sync: %d created, %d updated, %d deleted",
-            result.created, result.updated, result.deleted,
-        )
+        if result.errors:
+            for err in result.errors:
+                logger.error(err)
 
         # Also sync guild-specific commands if guild_id is set
         if self._guild_id is not None:
             guild_result = await syncer.sync_guild(self._guild_id)
-            logger.info(
-                "Guild sync (%s): %d created, %d updated, %d deleted",
-                self._guild_id,
-                guild_result.created, guild_result.updated, guild_result.deleted,
-            )
+            if guild_result.errors:
+                for err in guild_result.errors:
+                    logger.error(err)
 
     async def close(self) -> None:
         logger.info("SoSad shutting down...")
