@@ -153,8 +153,8 @@ class Client(BaseClient):
         @self._bot.listen(hikari.StartedEvent)
         async def on_started(event: hikari.StartedEvent) -> None:
             logger.info("SoSad connected as %s", self.bot.get_me())
-            if client._guild_id and client._sync_commands:
-                await client._sync_guild_commands()
+            if client._sync_commands:
+                await client._sync_all_commands()
 
         @self._bot.listen(hikari.InteractionCreateEvent)
         async def on_interaction(event: hikari.InteractionCreateEvent) -> None:
@@ -180,23 +180,33 @@ class Client(BaseClient):
         except Exception:
             logger.exception("Failed to attach event dispatcher")
 
-    async def _sync_guild_commands(self) -> None:
-        """Sync commands to a specific guild (instant, no propagation delay)."""
-        if self._bot is None or self._registry is None or self._guild_id is None:
+    async def _sync_all_commands(self) -> None:
+        """Sync all commands — global + guild if set."""
+        if self._bot is None or self._registry is None:
             return
         from sosad.commands.sync import CommandSyncer
         me = self._bot.get_me()
         if me is None:
             return
         syncer = CommandSyncer(self._bot.rest, self._registry, me.id)
-        result = await syncer.sync_guild(self._guild_id)
+
+        # Always sync global commands
+        result = await syncer.sync()
         logger.info(
-            "Guild sync (%s): %d created, %d updated, %d deleted",
-            self._guild_id,
-            result.created,
-            result.updated,
-            result.deleted,
+            "Global sync: %d created, %d updated, %d deleted",
+            result.created, result.updated, result.deleted,
         )
+
+        # Also sync guild-specific commands if guild_id is set
+        if self._guild_id is not None:
+            guild_result = await syncer.sync_guild(self._guild_id)
+            logger.info(
+                "Guild sync (%s): %d created, %d updated, %d deleted",
+                self._guild_id,
+                guild_result.created, guild_result.updated, guild_result.deleted,
+            )
+
+    async def close(self) -> None:
         logger.info("SoSad shutting down...")
         if self._bot is not None:
             await self._bot.close()
