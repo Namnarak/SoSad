@@ -1,14 +1,13 @@
 """Tests for the command system: decorators, registry, router, executor."""
 
-import pytest
 import hikari
-from sosad.commands.decorators import _extract_options, slash_command, sub_command, command_group
-from sosad.commands.models import SlashCommandMeta, SubCommandMeta, CommandGroupMeta, OptionDescriptor
-from sosad.commands.registry import CommandRegistry
+
+from sosad.commands.decorators import _extract_options, command_group, slash_command, sub_command
+from sosad.commands.models import CommandGroupMeta, SlashCommandMeta, SubCommandMeta
 from sosad.commands.registration import get_registry
+from sosad.commands.registry import CommandRegistry
 from sosad.commands.router import build_handler_args
 from sosad.di.scopes import ScopeManager
-
 
 # ── Option Extraction ──
 

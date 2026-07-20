@@ -1,9 +1,10 @@
 """Tests for the DI container."""
 
 import pytest
+
 from sosad.di.container import Container
-from sosad.di.scopes import ScopeManager
 from sosad.di.markers import inject
+from sosad.di.scopes import ScopeManager
 
 
 class FakeService:

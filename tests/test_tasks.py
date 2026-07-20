@@ -1,10 +1,12 @@
 """Tests for the task scheduler."""
 
 import asyncio
+
 import pytest
+
 from sosad.tasks.base import TaskMeta
+from sosad.tasks.decorators import loop, task
 from sosad.tasks.scheduler import TaskScheduler
-from sosad.tasks.decorators import task, loop
 
 
 def test_task_decorator():

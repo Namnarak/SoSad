@@ -1,6 +1,7 @@
 """Tests for discord.py compatibility layer."""
 
 import hikari
+
 from sosad.compat.bot import Bot
 from sosad.compat.context import Context
 from sosad.compat.ext import Cog, cog
@@ -37,7 +38,7 @@ def test_bot_event_decorator():
 
 
 def test_context_send():
-    from unittest.mock import MagicMock, AsyncMock
+    from unittest.mock import AsyncMock, MagicMock
 
     mock_ctx = MagicMock()
     mock_ctx.respond.return_value = MagicMock()

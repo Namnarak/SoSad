@@ -1,8 +1,8 @@
 """Tests for error handling pipeline."""
 
-import asyncio
 import pytest
-from sosad.errors.base import CheckFailed, RateLimited, CommandNotFound, SoSadError
+
+from sosad.errors.base import CheckFailed, CommandNotFound, RateLimited, SoSadError
 from sosad.errors.handler import ErrorPipeline
 
 

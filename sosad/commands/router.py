@@ -1,4 +1,4 @@
-"""Routes InteractionCreateEvent to the correct handler through middleware."""
+"""Routes interactions to the correct handler through middleware."""
 
 from __future__ import annotations
 
@@ -16,19 +16,17 @@ if __name__ != "__main__":
 
     if TYPE_CHECKING:
         from sosad.commands.registry import CommandRegistry
-        from sosad.core.client import Client
+        from sosad.core.base_client import BaseClient
         from sosad.middleware.types import HandlerFunc
 
 logger = logging.getLogger("sosad.router")
 
-# Types that are primitive interaction options (not DI-resolved)
 _PRIMITIVE_TYPES = frozenset({
     str, int, float, bool,
     hikari.User, hikari.Member,
     hikari.GuildChannel, hikari.Role, hikari.Attachment,
 })
 
-# Types that are framework-provided
 _FRAMEWORK_TYPES = frozenset({InteractionContext})
 
 
@@ -118,7 +116,6 @@ def build_handler_args(
 
 
 def get_di_params(handler: Any) -> dict[str, inspect.Parameter]:
-    """Get parameters that need DI resolution."""
     sig = inspect.signature(handler)
     di_params: dict[str, inspect.Parameter] = {}
     for name, param in sig.parameters.items():
@@ -135,12 +132,15 @@ def get_di_params(handler: Any) -> dict[str, inspect.Parameter]:
 
 
 class CommandRouter:
-    """Routes InteractionCreateEvent to the correct handler through middleware."""
+    """Routes interactions to the correct handler through middleware.
+
+    Supports both Gateway (via events) and REST (via direct interaction objects).
+    """
 
     def __init__(
         self,
         registry: CommandRegistry,
-        client: Client,
+        client: BaseClient,
         pipeline: HandlerFunc,
     ) -> None:
         self._registry = registry
@@ -150,7 +150,43 @@ class CommandRouter:
     async def handle_interaction(
         self, event: hikari.InteractionCreateEvent
     ) -> None:
+        """Handle an interaction from Gateway (via InteractionCreateEvent)."""
         interaction = event.interaction
+        await self._handle_raw_interaction(interaction)
+
+    async def handle_interaction_event(
+        self,
+        interaction: hikari.CommandInteraction,
+    ) -> None:
+        """Handle a direct interaction (from REST or other sources)."""
+        await self._handle_raw_interaction(interaction)
+
+    async def handle_component_interaction(
+        self,
+        interaction: hikari.ComponentInteraction,
+    ) -> None:
+        """Handle a component interaction (button/select) from REST."""
+        await self._route_component(interaction)
+
+    async def handle_modal_interaction(
+        self,
+        interaction: hikari.ModalInteraction,
+    ) -> None:
+        """Handle a modal interaction from REST."""
+        await self._route_modal(interaction)
+
+    async def handle_autocomplete_interaction(
+        self,
+        interaction: hikari.AutocompleteInteraction,
+    ) -> None:
+        """Handle an autocomplete interaction from REST."""
+        await self._route_autocomplete(interaction)
+
+    async def _handle_raw_interaction(
+        self,
+        interaction: hikari.CommandInteraction,
+    ) -> None:
+        """Core interaction handler — shared by Gateway and REST."""
         if not isinstance(interaction, hikari.CommandInteraction):
             return
 
@@ -176,5 +212,75 @@ class CommandRouter:
         finally:
             scope.cleanup()
 
+    async def _route_component(
+        self,
+        interaction: hikari.ComponentInteraction,
+    ) -> None:
+        """Route a component interaction to its registered handler."""
+        from sosad.components.registry import ComponentRegistry
 
-__all__ = ["CommandRouter", "build_handler_args", "get_di_params"]
+        registry = ComponentRegistry.get_instance()
+        handler = registry.get_handler(interaction.custom_id)
+
+        if handler is None:
+            logger.warning("No handler for component: %s", interaction.custom_id)
+            return
+
+        ctx = InteractionContext(
+            interaction=interaction,
+            client=self._client,
+            app=self._client.app,
+        )
+
+        scope = ScopeManager()
+
+        try:
+            await handler(ctx, scope)
+        except Exception:
+            logger.exception("Error handling component %s", interaction.custom_id)
+        finally:
+            scope.cleanup()
+
+    async def _route_modal(
+        self,
+        interaction: hikari.ModalInteraction,
+    ) -> None:
+        """Route a modal interaction to its registered handler."""
+        from sosad.components.registry import ComponentRegistry
+
+        registry = ComponentRegistry.get_instance()
+        handler = registry.get_modal_handler(interaction.custom_id)
+
+        if handler is None:
+            logger.warning("No handler for modal: %s", interaction.custom_id)
+            return
+
+        ctx = InteractionContext(
+            interaction=interaction,
+            client=self._client,
+            app=self._client.app,
+        )
+
+        scope = ScopeManager()
+
+        try:
+            await handler(ctx, scope)
+        except Exception:
+            logger.exception("Error handling modal %s", interaction.custom_id)
+        finally:
+            scope.cleanup()
+
+    async def _route_autocomplete(
+        self,
+        interaction: hikari.AutocompleteInteraction,
+    ) -> None:
+        """Route an autocomplete interaction."""
+        logger.warning("Autocomplete not yet implemented for: %s", interaction.command_name)
+        await interaction.create_initial_response([])
+
+
+__all__ = [
+    "CommandRouter",
+    "build_handler_args",
+    "get_di_params",
+]

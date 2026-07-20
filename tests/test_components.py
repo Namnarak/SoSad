@@ -1,10 +1,10 @@
 """Tests for the component system."""
 
-import pytest
 import hikari
-from sosad.components.base import ButtonMeta, SelectMeta, ModalMeta, ComponentContext
-from sosad.components.registry import ComponentRegistry, get_component_registry
-from sosad.components.decorators import button, select, modal
+
+from sosad.components.base import ButtonMeta, ComponentContext, ModalMeta, SelectMeta
+from sosad.components.decorators import button, modal, select
+from sosad.components.registry import ComponentRegistry
 
 
 def test_button_decorator():

@@ -1,6 +1,7 @@
 """Tests for checks and cooldowns."""
 
 import pytest
+
 from sosad.checks.base import CheckResult
 from sosad.cooldowns.buckets import BucketScope, CooldownConfig
 from sosad.cooldowns.storage import InMemoryCooldownStorage

@@ -9,15 +9,26 @@ import hikari
 
 if TYPE_CHECKING:
     from sosad.core.app import App
-    from sosad.core.client import Client
+    from sosad.core.base_client import BaseClient
 
 
 _MISSING = object()
 
+InteractionT = (
+    hikari.CommandInteraction
+    | hikari.ComponentInteraction
+    | hikari.ModalInteraction
+    | hikari.AutocompleteInteraction
+)
+
 
 @dataclass(frozen=True, slots=True)
 class ResponseBuilder:
-    """Immutable builder for interaction responses. Each method returns a new builder."""
+    """Immutable builder for interaction responses. Each method returns a new builder.
+
+    Works with both Gateway and REST modes — uses hikari's built-in
+    ``create_initial_response()`` which handles transport internally.
+    """
 
     _interaction: hikari.CommandInteraction | hikari.ComponentInteraction | hikari.ModalInteraction
     _response_type: hikari.ResponseType = hikari.ResponseType.MESSAGE_CREATE
@@ -104,7 +115,14 @@ class ResponseBuilder:
             _components=self._components,
         )
 
-    async def send(self) -> hikari.MessageResponse[hikari.CommandInteraction]:
+    async def send(self) -> Any:
+        """Send the response.
+
+        Works with both Gateway and REST:
+        - Gateway: sends via gateway connection
+        - REST: sends via REST API (``create_interaction_response`` endpoint)
+        Both use hikari's built-in ``interaction.create_initial_response()``.
+        """
         builder = self._interaction.build_response(self._response_type)
         if self._content is not None:
             builder = builder.set_content(self._content)
@@ -126,10 +144,13 @@ class ResponseBuilder:
 
 @dataclass(frozen=True, slots=True)
 class InteractionContext:
-    """Immutable snapshot of an interaction. Created once per request."""
+    """Immutable snapshot of an interaction. Created once per request.
 
-    interaction: hikari.CommandInteraction
-    client: Client
+    Works with both Gateway and REST interactions from hikari.
+    """
+
+    interaction: hikari.CommandInteraction | hikari.ComponentInteraction | hikari.ModalInteraction
+    client: BaseClient
     app: App
 
     @property
@@ -146,9 +167,15 @@ class InteractionContext:
 
     @property
     def options(self) -> dict[str, hikari.CommandInteractionOption]:
-        return {opt.name: opt for opt in (self.interaction.options or ())}
+        if isinstance(self.interaction, hikari.CommandInteraction):
+            return {opt.name: opt for opt in (self.interaction.options or ())}
+        return {}
 
     def get_option(self, name: str, default: Any = _MISSING) -> Any:
+        if not isinstance(self.interaction, hikari.CommandInteraction):
+            if default is _MISSING:
+                raise KeyError(f"Option '{name}' not found")
+            return default
         opts = self.options
         if name not in opts:
             if default is _MISSING:
@@ -169,6 +196,8 @@ class InteractionContext:
         return value
 
     def get_user(self, name: str) -> hikari.User:
+        if not isinstance(self.interaction, hikari.CommandInteraction):
+            raise TypeError("Not a command interaction")
         opt = self.options.get(name)
         if opt is None:
             raise KeyError(f"Option '{name}' not found")
@@ -182,8 +211,6 @@ class InteractionContext:
         if user is None:
             raise ValueError(f"User {user_id} not found")
         return user
-
-    # ── Shortcut respond: ctx.respond("Pong!") ──
 
     def respond(
         self,

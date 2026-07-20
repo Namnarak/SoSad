@@ -1,9 +1,7 @@
 """Tests for the REST API client."""
 
-import pytest
 from sosad.api.rate_limit import RateLimitState, parse_route
 from sosad.api.types import APIError, HTTPMethod, RESTResponse
-
 
 # ── Rate Limit Tests ──
 

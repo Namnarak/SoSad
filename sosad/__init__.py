@@ -21,10 +21,13 @@ from sosad.commands import CommandRegistry, command_group, slash_command, sub_co
 from sosad.commands.executor import execute_command
 from sosad.components.base import ComponentContext
 from sosad.components.modal import Modal, TextInputBuilder
+from sosad.components.paginator import Paginator
+from sosad.components.persistent import PersistentView
 from sosad.components.view import ButtonBuilder, SelectBuilder, View
 from sosad.context import InteractionContext, ResponseBuilder
 from sosad.cooldowns import BucketScope, CooldownConfig, cooldown
-from sosad.core import App, Client
+from sosad.core import App, BaseClient, Client
+from sosad.core.rest_client import RESTClient as RestBot
 from sosad.core.settings import Settings
 from sosad.di import Container, ScopeManager, inject
 from sosad.errors import (
@@ -40,7 +43,7 @@ from sosad.events import EventDispatcher, listen
 from sosad.middleware import HandlerFunc, MiddlewareFunc, MiddlewareStack
 from sosad.permissions import PermissionResolver, requires_permissions
 from sosad.plugins import Plugin, PluginManager
-from sosad.tasks import TaskMeta, TaskScheduler, loop, task
+from sosad.tasks import TaskMeta, TaskRegistry, TaskScheduler, get_task_registry, loop, task
 
 __version__ = __version__
 
@@ -50,7 +53,9 @@ app = Client
 __all__ = [
     # Core
     "App",
+    "BaseClient",
     "Client",
+    "RestBot",
     "app",
     "Settings",
     # Context
@@ -69,6 +74,8 @@ __all__ = [
     "SelectBuilder",
     "TextInputBuilder",
     "ComponentContext",
+    "Paginator",
+    "PersistentView",
     # Events
     "EventDispatcher",
     "listen",
@@ -110,7 +117,9 @@ __all__ = [
     "PluginManager",
     # Tasks
     "TaskMeta",
+    "TaskRegistry",
     "TaskScheduler",
+    "get_task_registry",
     "task",
     "loop",
     # API

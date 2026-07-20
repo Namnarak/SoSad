@@ -1,8 +1,9 @@
 """Tests for the middleware pipeline."""
 
 import pytest
-from sosad.middleware.registry import MiddlewareStack
+
 from sosad.di.scopes import ScopeManager
+from sosad.middleware.registry import MiddlewareStack
 
 
 @pytest.mark.asyncio

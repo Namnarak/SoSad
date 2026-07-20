@@ -5,7 +5,7 @@ import sosad
 
 def test_version() -> None:
     """Test version is defined."""
-    assert sosad.__version__ == "0.1.2"
+    assert sosad.__version__ == "0.2.0"
 
 
 def test_core_imports() -> None:
@@ -88,3 +88,30 @@ def test_hikari_reexport() -> None:
     """Test hikari is re-exported."""
     assert sosad.hikari is not None
     assert sosad.hikari.GatewayBot is not None
+
+
+def test_rest_bot_import() -> None:
+    """Test REST Bot imports."""
+    assert sosad.RestBot is not None
+    assert sosad.BaseClient is not None
+    from sosad.core.rest_client import RESTClient
+    assert RESTClient is not None
+
+
+def test_rest_client_instantiation() -> None:
+    """Test RESTClient can be instantiated."""
+    from sosad.core.rest_client import RESTClient
+    client = RESTClient(token="test_token")
+    assert client.is_rest
+    assert client.is_rest is not False
+
+
+def test_compat_rest_bot() -> None:
+    """Test compat Bot in REST mode."""
+    from sosad.compat import Bot
+    bot = Bot(mode="rest", token="test_token")
+    assert bot._mode == "rest"
+    assert hasattr(bot, "command")
+    assert hasattr(bot, "event")
+    assert hasattr(bot, "run")
+    assert hasattr(bot, "close")

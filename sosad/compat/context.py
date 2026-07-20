@@ -40,8 +40,17 @@ class Context:
         return self._ctx.guild_id
 
     @property
+    def guild_id(self) -> int | None:
+        gid = self._ctx.guild_id
+        return int(gid) if gid else None
+
+    @property
     def channel(self) -> hikari.Snowflake:
         return self._ctx.channel_id
+
+    @property
+    def channel_id(self) -> int:
+        return int(self._ctx.channel_id)
 
     @property
     def message(self) -> Any:
@@ -50,6 +59,14 @@ class Context:
     @property
     def bot(self) -> Any:
         return self._ctx.client
+
+    @property
+    def client(self) -> Any:
+        return self._ctx.client
+
+    @property
+    def me(self) -> hikari.User | None:
+        return self._ctx.author
 
     async def send(
         self,
@@ -84,6 +101,20 @@ class Context:
     async def defer(self, *, ephemeral: bool = False) -> None:
         """Defer the interaction."""
         await self._ctx.defer(ephemeral=ephemeral)
+
+    async def edit(self, content: str | None = None, **kwargs: Any) -> Any:
+        """Edit the initial response."""
+        return await self._ctx.edit_response(content=content, **kwargs)
+
+    async def delete(self) -> None:
+        """Delete the initial response."""
+        from contextlib import suppress
+        with suppress(Exception):
+            await self._ctx.interaction.delete_initial_response()
+
+    async def reply(self, content: str | None = None, **kwargs: Any) -> Any:
+        """Reply to the interaction (alias for send)."""
+        return await self.send(content, **kwargs)
 
 
 __all__ = ["Context"]
