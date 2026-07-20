@@ -5,10 +5,12 @@
 [![PyPI](https://img.shields.io/pypi/v/sosad?color=%237c3aed)](https://pypi.org/project/sosad/)
 [![Python](https://img.shields.io/pypi/pyversions/sosad?color=%233498db)](https://pypi.org/project/sosad/)
 [![License](https://img.shields.io/pypi/l/sosad?color=%2357F287)](https://github.com/Namnarak/SoSad/blob/main/LICENSE)
-![discord.py Compat](https://img.shields.io/badge/discord.py_compat-%E2%89%8890%25-brightgreen)
+![Typing: Pyright](https://img.shields.io/badge/typing-pyright-strict-blue)
+![Discord API](https://img.shields.io/badge/discord_api-v10-5865F2)
+![CI](https://img.shields.io/github/actions/workflow/status/Namnarak/SoSad/ci.yml?branch=main&label=CI)
 
 A modern, modular, type-safe Discord framework built on [Hikari](https://github.com/hikari-py/hikari).
-Upgrade your bot with minimal rewrites.
+Designed to ease migration from discord.py while providing modern architecture such as dependency injection, middleware, and REST deployment.
 
 ```
 pip install sosad
@@ -311,18 +313,33 @@ class Config(sosad.Settings):
 config = Config()
 ```
 
-## Performance
+## Architecture
 
-*Internal benchmarks on Python 3.12 / Linux x86_64. Results vary by machine and workload.*
+| Layer | SoSad |
+|---|---|
+| Gateway | ✅ |
+| REST | ✅ |
+| Commands | ✅ |
+| Components | ✅ |
+| DI | ✅ |
+| Middleware | ✅ |
+| Plugin Loader | ✅ |
+| Scheduler | ✅ |
+| Context | ✅ |
+| Builder API | ✅ |
+| Compat Layer | ✅ |
 
-| Metric | discord.py | SoSad |
-|---|---|---|
-| Startup (cold) | ~1.2s | ~0.8s |
-| Interaction latency | ~40-80ms | ~40-80ms (same Hikari backend) |
-| Memory (idle) | ~45MB | ~35MB |
-| REST mode memory | N/A | ~15MB |
+## Ecosystem
 
-SoSad's overhead is minimal — it adds a thin layer of abstraction on top of Hikari.
+| Package | Description |
+|---|---|
+| `sosad` | Core framework |
+| `sosad-cli` | CLI tools (`sosad init`) |
+| `sosad-ext-web` | Web dashboard integration |
+| `sosad-ext-views` | Advanced view components |
+| `sosad-ext-pagination` | Extended pagination |
+| `sosad-ext-cache` | Caching layer |
+| `sosad-ext-scheduler` | Advanced task scheduling |
 
 ## Roadmap
 

@@ -32,17 +32,17 @@
 | **Persistent Views** | ✅ Built-in | ⚠️ Requires registration | ⚠️ Requires registration | ⚠️ Requires registration | ❌ No |
 | **Paginator** | ✅ Built-in | ❌ No | ❌ No | ❌ No | ❌ No |
 | **DI Container** | ✅ FastAPI-style | ❌ No | ❌ No | ❌ No | ❌ No |
-| **Middleware** | ✅ ASGI-style | ⚠️ Hooks | ⚠️ Hooks | ❌ No | ❌ No |
+| **Middleware** | ✅ ASGI-style | ⚠️ Event hooks | ⚠️ Event hooks | ❌ No | ❌ No |
 | **Plugin System** | ✅ Auto-discover | ⚠️ Manual | ✅ Auto-discover | ✅ Extensions | ❌ No |
 | **Background Tasks** | ✅ `@sosad.task` | ✅ `@tasks.loop` | ✅ `@task` | ✅ Task extension | ❌ No |
 | **REST Mode** | ✅ Serverless | ❌ No | ❌ No | ❌ No | ✅ RESTBot |
-| **Rate Limiting** | ✅ Auto per-route | ⚠️ Basic | ⚠️ Basic | ⚠️ Basic | ⚠️ Basic |
-| **Error Pipeline** | ✅ Typed exceptions + handlers | ⚠️ Basic | ⚠️ Basic | ⚠️ Basic | ❌ No |
+| **Rate Limiting** | ✅ Auto per-route [See docs](https://sosad.dev/guides/middleware/#rate-limiting) | ⚠️ Basic | ⚠️ Basic | ⚠️ Basic | ⚠️ Basic |
+| **Error Pipeline** | ✅ Typed exception pipeline | ⚠️ Basic | ⚠️ Basic | ⚠️ Basic | ❌ No |
 | **Cooldown System** | ✅ Bucket-based | ✅ `@cooldown` | ✅ `@cooldown` | ❌ No | ❌ No |
 | **Permission Checks** | ✅ Decorators | ✅ `@has perms` | ✅ `@has perms` | ✅ Native | ⚠️ Manual |
 | **CLI Scaffold** | ✅ `sosad init` | ❌ No | ❌ No | ✅ `interactions init` | ❌ No |
 | **discord.py Compat** | ✅ High compatibility | ✅ Native | ❌ No | ❌ No | ❌ No |
-| **Hikari Native** | ✅ Full access | ❌ No | ✅ Full access | ❌ No | ✅ Native |
+| **Hikari Native** | ✅ Full access | ❌ No | ✅ Full access | ❌ No | ✅ Core library |
 | **Serverless Ready** | ✅ REST mode | ❌ No | ❌ No | ❌ No | ✅ RESTBot |
 
 ## Code Comparison
@@ -163,4 +163,4 @@ bot = sosad.Client(token="...", intents=hikari.Intents.ALL_UNPRIVILEGED)
 
 ## Conclusion
 
-SoSad focuses on combining discord.py compatibility with modern architecture such as dependency injection, middleware and REST mode. For new projects requiring advanced features (DI, middleware, serverless), SoSad is a strong option. For simple bots, discord.py or lightbulb may be simpler.
+SoSad combines modern framework features such as dependency injection, middleware, persistent UI components and REST deployment into a single Discord framework while maintaining a familiar developer experience.
