@@ -13,7 +13,7 @@ from sosad.commands.registry import CommandRegistry
 logger = logging.getLogger("sosad.sync")
 
 
-@dataclass(frozen=True)
+@dataclass
 class SyncResult:
     """Result of a command sync operation."""
 
