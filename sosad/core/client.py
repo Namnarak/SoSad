@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from typing import Any
 
 import hikari
@@ -42,6 +43,7 @@ class Client(BaseClient):
         self._intents = intents
         self._prefix: str = "!"
         self._prefix_registry: PrefixRegistry | None = None
+        self._pending_listeners: list[tuple[type[hikari.Event], Callable[..., Any]]] = []
         super().__init__(
             token=token,
             logs=logs,
@@ -94,6 +96,23 @@ class Client(BaseClient):
             self._prefix_registry = get_prefix_registry()
         return self._prefix_registry
 
+    def listen(
+        self,
+        event_type: type[hikari.Event],
+    ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+        """Decorator to listen for events. Works before bot.run().
+
+        Usage::
+
+            @bot.listen(hikari.InteractionCreateEvent)
+            async def on_interaction(event):
+                ...
+        """
+        def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
+            self._pending_listeners.append((event_type, func))
+            return func
+        return decorator
+
     def run(self) -> None:
         """Start the bot (blocking)."""
         self._bot = hikari.GatewayBot(
@@ -138,6 +157,9 @@ class Client(BaseClient):
                 prefix=client._prefix,
                 registry=client._prefix_registry,
             )
+
+        for event_type, handler in self._pending_listeners:
+            self._bot.listen(event_type)(handler)
 
     def _attach_event_dispatcher(self) -> None:
         if self._bot is None:
