@@ -5,6 +5,8 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+_site/
+.mimocode/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
