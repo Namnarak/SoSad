@@ -38,6 +38,9 @@ class ResponseBuilder:
     _flags: hikari.MessageFlag = hikari.MessageFlag.NONE
     _components: tuple[Any, ...] = ()
 
+    def __await__(self) -> Any:
+        return self.send().__await__()
+
     def content(self, text: str) -> Self:
         return self.__class__(
             _interaction=self._interaction,
@@ -116,23 +119,19 @@ class ResponseBuilder:
         )
 
     async def send(self) -> Any:
-        """Send the response.
-
-        Works with both Gateway and REST:
-        - Gateway: sends via gateway connection
-        - REST: sends via REST API (``create_interaction_response`` endpoint)
-        Both use hikari's built-in ``interaction.create_initial_response()``.
-        """
-        builder = self._interaction.build_response(self._response_type)
+        kwargs: dict[str, Any] = {}
         if self._content is not None:
-            builder = builder.set_content(self._content)
-        for embed in self._embeds:
-            builder = builder.add_embed(embed)
-        for f in self._files:
-            builder = builder.add_file(f)
+            kwargs["content"] = self._content
+        if self._embeds:
+            kwargs["embeds"] = self._embeds
+        if self._files:
+            kwargs["attachments"] = self._files
         if self._flags is not hikari.MessageFlag.NONE:
-            builder = builder.set_flags(self._flags)
-        return await builder.create_initial_response()
+            kwargs["flags"] = self._flags
+        return await self._interaction.create_initial_response(
+            self._response_type,
+            **kwargs,
+        )
 
     async def defer(self, *, ephemeral: bool = False) -> None:
         flags = hikari.MessageFlag.EPHEMERAL if ephemeral else hikari.MessageFlag.NONE
