@@ -93,7 +93,7 @@ bot.run("TOKEN")
 
 ## discord.py Compatibility
 
-≈ 90% of discord.py API is supported out of the box:
+High compatibility with common discord.py APIs:
 
 | discord.py | SoSad compat | Status |
 |---|---|---|
@@ -120,7 +120,6 @@ bot.run("TOKEN")
 **Not yet supported:**
 - `discord.ui` (use SoSad native View/Modal builders)
 - `discord.app_commands` (use SoSad native `@sosad.slash_command`)
-- Prefix commands (`!ping`) — slash commands only
 - Voice / Guild channels / Member editing via compat (use hikari directly)
 
 ## Why SoSad?
@@ -344,20 +343,23 @@ config = Config()
 
 ## Roadmap
 
-- [x] Gateway bot
-- [x] REST bot (serverless-ready)
-- [x] Slash commands
-- [x] Components (buttons, selects, modals)
-- [x] Persistent views + Paginator
-- [x] discord.py compat layer (Embed, Colour, File, utils)
-- [x] Background task scheduler
-- [x] CLI scaffold (`sosad init`)
-- [x] Prefix commands (`!ping`)
-- [x] `discord.app_commands` compat
-- [x] `discord.Object` compat
-- [x] Persist views to database
-- [x] Metrics / OpenTelemetry
-- [x] Webhook support
+### Completed
+- ✅ Gateway bot
+- ✅ REST bot (serverless-ready)
+- ✅ Slash commands
+- ✅ Components (buttons, selects, modals)
+- ✅ Persistent views + Paginator
+- ✅ discord.py compat layer (Embed, Colour, File, utils)
+- ✅ Background task scheduler
+- ✅ CLI scaffold (`sosad init`)
+- ✅ Prefix commands (`!ping`)
+- ✅ `discord.app_commands` compat
+- ✅ `discord.Object` compat
+
+### Planned
+- ⏳ Persist views to database
+- ⏳ Metrics / OpenTelemetry
+- ⏳ Webhook support
 
 ## Requirements
 
