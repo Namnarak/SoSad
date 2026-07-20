@@ -34,7 +34,7 @@ class Client(BaseClient):
         token: str,
         intents: hikari.Intents,
         logs: str | int = "INFO",
-        banner: str = "so sad",
+        banner: str = "sosad",
         auto_discover_plugins: bool = True,
         sync_commands: bool = True,
         **kwargs: Any,
