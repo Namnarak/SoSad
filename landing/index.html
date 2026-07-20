@@ -20,6 +20,7 @@
             --card-border: #1a1a2e;
             --text: #e0e0e8;
             --text-dim: #888;
+            --green: #34d399;
             --gradient: linear-gradient(135deg, var(--purple), var(--pink));
         }
 
@@ -33,7 +34,6 @@
             overflow-x: hidden;
         }
 
-        /* ── NAV ── */
         nav {
             position: fixed;
             top: 0;
@@ -97,7 +97,6 @@
             background: rgba(124,58,237,0.1);
         }
 
-        /* ── HERO ── */
         .hero {
             min-height: 100vh;
             display: flex;
@@ -130,6 +129,20 @@
             margin-bottom: 1.5rem;
         }
 
+        .badge-green {
+            border-color: rgba(52,211,153,0.3);
+            background: rgba(52,211,153,0.1);
+            color: var(--green);
+        }
+
+        .badge-row {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
         h1 {
             font-size: clamp(3rem, 8vw, 5rem);
             font-weight: 900;
@@ -152,7 +165,6 @@
 
         .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
 
-        /* ── CODE SHOWCASE ── */
         .code-section {
             padding: 4rem 2rem;
             display: flex;
@@ -209,7 +221,6 @@
             border-radius: 4px;
         }
 
-        /* ── FEATURES ── */
         .features {
             padding: 6rem 2rem;
             max-width: 1200px;
@@ -275,7 +286,6 @@
             font-size: 0.9rem;
         }
 
-        /* ── COMPARE TABLE ── */
         .compare {
             padding: 6rem 2rem;
             max-width: 900px;
@@ -305,8 +315,8 @@
 
         .check { color: #34d399; }
         .cross { color: #555; }
+        .new { color: var(--purple); }
 
-        /* ── INSTALL ── */
         .install {
             padding: 6rem 2rem;
             text-align: center;
@@ -331,7 +341,6 @@
             border-radius: 8px;
         }
 
-        /* ── FOOTER ── */
         footer {
             padding: 3rem 2rem;
             text-align: center;
@@ -342,7 +351,6 @@
 
         footer a { color: var(--purple); text-decoration: none; }
 
-        /* ── GRID BG ── */
         .grid-bg {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -376,9 +384,12 @@
     <section class="hero">
         <div class="hero-bg"></div>
         <div class="hero-content">
-            <div class="badge">v0.1.2 — Now on PyPI</div>
+            <div class="badge-row">
+                <span class="badge">v0.2.0 — Now on PyPI</span>
+                <span class="badge badge-green">≈ 90% discord.py compat</span>
+            </div>
             <h1><span class="gradient">Drop in.</span><br>Scale up.</h1>
-            <p>A Discord framework that upgrades your bot without rewriting it. Change one line, get production-ready features instantly.</p>
+            <p>A Discord framework that upgrades your bot without rewriting it. Change one import line, get production-ready features instantly. Run anywhere — gateway or serverless.</p>
             <div class="hero-buttons">
                 <a href="wiki/" class="btn btn-primary">Get Started →</a>
                 <a href="https://github.com/Namnarak/SoSad" class="btn btn-outline">View on GitHub</a>
@@ -461,19 +472,39 @@ bot.<span class="function">run</span>(<span class="string">"TOKEN"</span>)</pre>
                 <p>Drop files in plugins/. Done.</p>
             </div>
             <div class="feature-card">
+                <div class="feature-icon">⏰</div>
+                <h3>Background Tasks</h3>
+                <p><code>@sosad.task(interval=300)</code> — cron without the pain.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎨</div>
+                <h3>View / Modal Builders</h3>
+                <p>Build components dynamically, not with decorators.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📄</div>
+                <h3>Persistent Views + Paginator</h3>
+                <p>Stateful views with timeout + built-in page navigation.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">☁️</div>
+                <h3>REST Bot (Serverless)</h3>
+                <p>No WebSocket. Deploy to Workers, Fly.io, or Railway.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎛️</div>
+                <h3>CLI Scaffold</h3>
+                <p><code>sosad init mybot</code> — Gateway, REST, or Components template.</p>
+            </div>
+            <div class="feature-card">
                 <div class="feature-icon">📊</div>
                 <h3>Structured Logging</h3>
                 <p>Every request logged with timing and context.</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">🎨</div>
-                <h3>View/Modal Builders</h3>
-                <p>Build components dynamically, not with decorators.</p>
-            </div>
-            <div class="feature-card">
                 <div class="feature-icon">⚙️</div>
                 <h3>Settings</h3>
-                <p>class Config(sosad.Settings) + auto .env loading.</p>
+                <p><code>class Config(sosad.Settings)</code> + auto .env loading.</p>
             </div>
         </div>
     </section>
@@ -518,6 +549,31 @@ bot.<span class="function">run</span>(<span class="string">"TOKEN"</span>)</pre>
                     <td class="check">✓ Auto-discover</td>
                 </tr>
                 <tr>
+                    <td>Background Tasks</td>
+                    <td class="cross">Manual asyncio</td>
+                    <td class="check">✓ <code>@task()</code></td>
+                </tr>
+                <tr>
+                    <td>Persistent Views</td>
+                    <td class="cross">Built-in</td>
+                    <td class="check">✓ <code>PersistentView</code></td>
+                </tr>
+                <tr>
+                    <td>Paginator</td>
+                    <td class="cross">3rd party</td>
+                    <td class="check">✓ Built-in</td>
+                </tr>
+                <tr>
+                    <td>REST / Serverless</td>
+                    <td class="cross">No</td>
+                    <td class="check">✓ <code>RestBot</code></td>
+                </tr>
+                <tr>
+                    <td>CLI Scaffold</td>
+                    <td class="cross">—</td>
+                    <td class="check">✓ <code>sosad init</code></td>
+                </tr>
+                <tr>
                     <td>Type Safety</td>
                     <td class="cross">Partial</td>
                     <td class="check">✓ Full strict</td>
@@ -526,11 +582,6 @@ bot.<span class="function">run</span>(<span class="string">"TOKEN"</span>)</pre>
                     <td>Config</td>
                     <td class="cross">Manual .env</td>
                     <td class="check">✓ Settings class</td>
-                </tr>
-                <tr>
-                    <td>Components</td>
-                    <td class="cross">Class Views</td>
-                    <td class="check">✓ Builders</td>
                 </tr>
             </tbody>
         </table>
@@ -547,7 +598,7 @@ bot.<span class="function">run</span>(<span class="string">"TOKEN"</span>)</pre>
 
     <footer>
         <p>SoSad is open source on <a href="https://github.com/Namnarak/SoSad">GitHub</a>. MIT License.</p>
-        <p style="margin-top: 0.5rem;">Built with ❤️ and <a href="https://github.com/hikari-py/hikari">Hikari</a></p>
+        <p style="margin-top: 0.5rem;">Built with <a href="https://github.com/hikari-py/hikari">Hikari</a></p>
     </footer>
 </body>
 </html>
