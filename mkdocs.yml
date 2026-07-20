@@ -1,0 +1,83 @@
+site_name: SoSad
+site_description: Drop in. Scale up. — A Discord framework that upgrades your bot without rewriting it.
+site_url: https://sosad.site
+repo_url: https://github.com/Namnarak/SoSad
+repo_name: Namnarak/SoSad
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep purple
+      accent: pink
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep purple
+      accent: pink
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Inter
+    code: JetBrains Mono
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - toc.follow
+  icon:
+    repo: fontawesome/brands/github
+  custom_dir: docs/overrides
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Namnarak/SoSad
+    - icon: fontawesome/brands/discord
+      link: https://discord.gg/sosad
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - def_list
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: guides/installation.md
+    - Quick Start: guides/quickstart.md
+    - Migration from discord.py: guides/migration.md
+  - Core:
+    - Client: guides/client.md
+    - Commands: guides/commands.md
+    - Context: guides/context.md
+    - Middleware: guides/middleware.md
+    - Dependency Injection: guides/di.md
+  - Features:
+    - Checks & Cooldowns: guides/checks.md
+    - Components (View/Modal): guides/components.md
+    - Events: guides/events.md
+    - Background Tasks: guides/tasks.md
+    - Plugin System: guides/plugins.md
+    - Settings & Config: guides/settings.md
+  - Advanced:
+    - REST API Client: guides/rest.md
+    - Error Handling: guides/errors.md
+    - Architecture: guides/architecture.md
+  - API Reference:
+    - Client: api/client.md
+    - Commands: api/commands.md
+    - Components: api/components.md

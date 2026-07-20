@@ -5,6 +5,8 @@ description = "A modern, modular, type-safe Discord framework built on Hikari"
 requires-python = ">=3.12"
 dependencies = [
     "hikari>=2.0.0.dev126",
+    "mkdocs>=1.6.1",
+    "mkdocs-material>=9.7.7",
     "pydantic>=2.0",
     "pydantic-settings>=2.0",
 ]
