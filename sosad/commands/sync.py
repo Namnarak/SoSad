@@ -43,7 +43,7 @@ class CommandSyncer:
         self._app_id = app_id
 
     def _build_command(self, cmd: dict[str, Any]) -> Any:
-        """Convert a command dict to a Hikari CommandBuilder."""
+        """Convert a command dict to a Hikari SlashCommandBuilder."""
         builder = self._rest.slash_command_builder(
             cmd["name"],
             cmd["description"],
@@ -52,25 +52,22 @@ class CommandSyncer:
             for opt in cmd["options"]:
                 option_type = hikari.OptionType(opt["type"])
                 if option_type == hikari.OptionType.SUB_COMMAND:
-                    sub = builder.sub_option(
-                        opt["name"],
-                        opt["description"],
-                    )
+                    sub = builder.sub_option(opt["name"], opt["description"])
                     if "options" in opt:
                         for sub_opt in opt["options"]:
-                            sub.option(
-                                hikari.OptionType(sub_opt["type"]),
-                                sub_opt["name"],
-                                sub_opt["description"],
-                                is_required=sub_opt.get("required", True),
-                            )
+                            sub.add_option(hikari.CommandOption(
+                                type=hikari.OptionType(sub_opt["type"]),
+                                name=sub_opt["name"],
+                                description=sub_opt["description"],
+                                is_required=sub_opt.get("required", False),
+                            ))
                 else:
-                    builder.option(
-                        option_type,
-                        opt["name"],
-                        opt["description"],
-                        is_required=opt.get("required", True),
-                    )
+                    builder.add_option(hikari.CommandOption(
+                        type=option_type,
+                        name=opt["name"],
+                        description=opt["description"],
+                        is_required=opt.get("required", False),
+                    ))
         return builder
 
     async def sync(self) -> SyncResult:
