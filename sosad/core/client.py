@@ -44,12 +44,12 @@ class Client(BaseClient):
         self._prefix: str = "!"
         self._prefix_registry: PrefixRegistry | None = None
         self._pending_listeners: list[tuple[type[hikari.Event], Callable[..., Any]]] = []
+        self._sync_commands = sync_commands
         super().__init__(
             token=token,
             logs=logs,
             banner=banner,
             auto_discover_plugins=auto_discover_plugins,
-            sync_commands=sync_commands,
             **kwargs,
         )
         self._bot: hikari.GatewayBot | None = None
