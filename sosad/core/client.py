@@ -45,6 +45,7 @@ class Client(BaseClient):
         self._prefix_registry: PrefixRegistry | None = None
         self._pending_listeners: list[tuple[type[hikari.Event], Callable[..., Any]]] = []
         self._sync_commands = sync_commands
+        self._guild_id: hikari.Snowflake | None = None
         super().__init__(
             token=token,
             logs=logs,
@@ -53,6 +54,14 @@ class Client(BaseClient):
             **kwargs,
         )
         self._bot: hikari.GatewayBot | None = None
+
+    @property
+    def guild_id(self) -> hikari.Snowflake | None:
+        return self._guild_id
+
+    @guild_id.setter
+    def guild_id(self, value: int | str | hikari.Snowflake | None) -> None:
+        self._guild_id = hikari.Snowflake(value) if value is not None else None
 
     @property
     def bot(self) -> hikari.GatewayBot:
@@ -144,6 +153,8 @@ class Client(BaseClient):
         @self._bot.listen(hikari.StartedEvent)
         async def on_started(event: hikari.StartedEvent) -> None:
             logger.info("SoSad connected as %s", self.bot.get_me())
+            if client._guild_id and client._sync_commands:
+                await client._sync_guild_commands()
 
         @self._bot.listen(hikari.InteractionCreateEvent)
         async def on_interaction(event: hikari.InteractionCreateEvent) -> None:
@@ -169,7 +180,23 @@ class Client(BaseClient):
         except Exception:
             logger.exception("Failed to attach event dispatcher")
 
-    async def close(self) -> None:
+    async def _sync_guild_commands(self) -> None:
+        """Sync commands to a specific guild (instant, no propagation delay)."""
+        if self._bot is None or self._registry is None or self._guild_id is None:
+            return
+        from sosad.commands.sync import CommandSyncer
+        me = self._bot.get_me()
+        if me is None:
+            return
+        syncer = CommandSyncer(self._bot.rest, self._registry, me.id)
+        result = await syncer.sync_guild(self._guild_id)
+        logger.info(
+            "Guild sync (%s): %d created, %d updated, %d deleted",
+            self._guild_id,
+            result.created,
+            result.updated,
+            result.deleted,
+        )
         logger.info("SoSad shutting down...")
         if self._bot is not None:
             await self._bot.close()

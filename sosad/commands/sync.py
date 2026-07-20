@@ -110,7 +110,76 @@ class CommandSyncer:
         )
         return result
 
-    def _needs_update(self, builder: Any, remote: Any) -> bool:
+    async def sync_guild(
+        self,
+        guild_id: hikari.Snowflake,
+        *,
+        delete_orphans: bool = True,
+    ) -> SyncResult:
+        """Sync commands to a specific guild (instant, no propagation delay)."""
+        result = SyncResult()
+        local_builders = self._registry.build_hikari_commands()
+
+        try:
+            remote_commands = await self._rest.fetch_application_commands(
+                self._app_id, guild=guild_id,
+            )
+        except Exception as exc:
+            result.errors.append(f"Failed to fetch guild commands: {exc}")
+            return result
+
+        remote_map = {cmd.name: cmd for cmd in remote_commands}
+        local_map = {getattr(b, "name", "unknown"): b for b in local_builders}
+
+        for name, builder in local_map.items():
+            if name in remote_map:
+                remote = remote_map[name]
+                if self._needs_update(builder, remote):
+                    try:
+                        await self._rest.edit_application_command(
+                            self._app_id,
+                            remote.id,
+                            builder=builder,
+                            guild=guild_id,
+                        )
+                        result.updated += 1
+                    except Exception as exc:
+                        result.errors.append(f"Failed to update {name}: {exc}")
+                else:
+                    result.unchanged += 1
+            else:
+                try:
+                    await self._rest.create_application_command(
+                        self._app_id,
+                        builder=builder,
+                        guild=guild_id,
+                    )
+                    result.created += 1
+                except Exception as exc:
+                    result.errors.append(f"Failed to create {name}: {exc}")
+
+        if delete_orphans:
+            for name, remote in remote_map.items():
+                if name not in local_map:
+                    try:
+                        await self._rest.delete_application_command(
+                            self._app_id,
+                            remote.id,
+                            guild=guild_id,
+                        )
+                        result.deleted += 1
+                    except Exception as exc:
+                        result.errors.append(f"Failed to delete {name}: {exc}")
+
+        logger.info(
+            "Guild sync (%s): %d created, %d updated, %d deleted, %d unchanged",
+            guild_id,
+            result.created,
+            result.updated,
+            result.deleted,
+            result.unchanged,
+        )
+        return result
         """Check if a command needs updating."""
         remote_name = getattr(remote, "name", None)
         builder_name = getattr(builder, "name", None)
