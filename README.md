@@ -3,11 +3,10 @@
 **Drop in. Scale up.**
 
 [![PyPI](https://img.shields.io/pypi/v/sosad?color=%237c3aed)](https://pypi.org/project/sosad/)
-[![Python](https://img.shields.io/pypi/pyversions/sosad?color=%233498db)](https://pypi.org/project/sosad/)
-[![License](https://img.shields.io/pypi/l/sosad?color=%2357F287)](https://github.com/Namnarak/SoSad/blob/main/LICENSE)
-![Typing: Pyright](https://img.shields.io/badge/typing-pyright-strict-blue)
-![Discord API](https://img.shields.io/badge/discord_api-v10-5865F2)
-![CI](https://img.shields.io/github/actions/workflow/status/Namnarak/SoSad/ci.yml?branch=main&label=CI)
+[![Python](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/Namnarak/SoSad/blob/main/LICENSE)
+![Typing: Pyright](https://img.shields.io/badge/typing-pyright--strict-blue)
+![Discord API](https://img.shields.io/badge/discord--api-v10-5865F2)
 
 A modern, modular, type-safe Discord framework built on [Hikari](https://github.com/hikari-py/hikari) — the fastest, most maintainable Discord library for Python.
 
