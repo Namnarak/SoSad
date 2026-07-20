@@ -5,7 +5,7 @@ import sosad
 
 def test_version() -> None:
     """Test version is defined."""
-    assert sosad.__version__ == "0.1.0"
+    assert sosad.__version__ == "0.1.2"
 
 
 def test_core_imports() -> None:

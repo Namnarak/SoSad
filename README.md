@@ -1,32 +1,66 @@
 # SoSad
 
+**Drop in. Scale up.**
+
 A modern, modular, type-safe Discord framework built on [Hikari](https://github.com/hikari-py/hikari).
+Upgrade your Discord bot without rewriting it.
 
-Python 3.12+ · asyncio · Type hints · Pydantic v2 · Ruff · Pyright strict
-
-## Features
-
-- **FastAPI-style DI** — Auto-resolve dependencies from type annotations, no `inject()` needed
-- **Response Builder** — `ctx.respond("Pong!")` shortcut OR builder pattern for complex responses
-- **Pipeline middleware** — ASGI-style middleware stack, not hook trees
-- **View/Modal builders** — Build components dynamically, not with decorators
-- **Auto plugin discovery** — Just drop `.py` files in `plugins/`
-- **Settings** — `class Config(sosad.Settings)` with auto `.env` loading
-- **CLI scaffolding** — `sosad new mybot` creates a ready-to-run project
-- **Error handling** — Pipeline-level error catching with typed exceptions
-- **Background tasks** — `@sosad.task(interval=300)` periodic task scheduler
-- **REST client** — Async HTTP client with rate limit handling
-
-## Quick Start
-
-```bash
-uv add sosad
-sosad new mybot
-cd mybot
-uv run bot.py
+```
+pip install sosad
 ```
 
-## Usage
+## Quick Migration
+
+```python
+# BEFORE (discord.py)
+import discord
+
+bot = discord.Client(intents=discord.Intents.default())
+
+@bot.command()
+async def ping(ctx):
+    await ctx.send("Pong!")
+
+bot.run("TOKEN")
+```
+
+```python
+# AFTER (SoSad) — change 1 line
+import sosad.compat as discord
+
+bot = discord.Bot(intents=discord.Intents.default())
+
+@bot.command(name="ping")
+async def ping(ctx):
+    await ctx.send("Pong!")
+
+bot.run("TOKEN")
+```
+
+**What you get for free:**
+- Automatic rate limiting
+- Better error handling
+- Type safety
+- Structured logging
+- Plugin loader
+- Middleware pipeline
+
+## What Changes
+
+| Feature | discord.py | SoSad |
+|---|---|---|
+| Rate limits | Manual / basic | Automatic per-route buckets |
+| Error handling | try/except | Pipeline with typed exceptions |
+| DI | None | FastAPI-style auto-resolve |
+| Middleware | Before/After events | ASGI-style pipeline |
+| Plugins | Manual load | Auto-discover `plugins/` |
+| Components | Class-based Views | Builder pattern |
+| Config | Manual .env | `class Config(sosad.Settings)` |
+| Type safety | Partial | Full (Pyright strict) |
+
+## Native SoSad API
+
+For new projects, use the SoSad-native API:
 
 ```python
 import hikari
@@ -66,18 +100,6 @@ await (
 )
 ```
 
-### Command Groups
-
-```python
-@sosad.command_group("config", "Bot configuration")
-async def config(ctx: sosad.InteractionContext) -> None:
-    pass
-
-@sosad.sub_command("config", "set", "Set a value")
-async def config_set(ctx: sosad.InteractionContext, key: str, value: str) -> None:
-    await ctx.respond(f"Set {key} = {value}")
-```
-
 ## Dependency Injection (FastAPI-style)
 
 ```python
@@ -89,41 +111,17 @@ bot.container.singleton(Database)
 
 @sosad.slash_command("check_db", "Check database")
 async def check_db(ctx: sosad.InteractionContext, db: Database) -> None:
-    # db is auto-resolved from container — no inject() needed
+    # db auto-resolved — no inject() needed
     await ctx.respond(f"DB: {'connected' if db.connected else 'down'}")
 ```
 
 ## Components (View/Modal Builders)
 
-### Buttons
-
 ```python
 view = sosad.View()
 view.button(label="Yes", style=hikari.ButtonStyle.SUCCESS, custom_id="yes")
 view.button(label="No", style=hikari.ButtonStyle.DANGER, custom_id="no")
-
 await ctx.respond("Confirm?").components(view).send()
-```
-
-### Select Menus
-
-```python
-view = sosad.View()
-view.select(custom_id="color", placeholder="Pick a color") \
-    .add_option("Red", "red") \
-    .add_option("Blue", "blue")
-
-await ctx.respond("Choose:").components(view).send()
-```
-
-### Modals
-
-```python
-modal = sosad.Modal(title="Feedback")
-modal.text_input("name", label="Your Name")
-modal.text_input("bio", label="Bio", style=hikari.TextInputStyle.PARAGRAPH)
-
-await ctx.respond().modal(modal).send()
 ```
 
 ## Middleware
@@ -138,34 +136,12 @@ async def logging(ctx, next, scope):
 bot.use(logging)
 ```
 
-## Checks & Cooldowns
-
-```python
-@sosad.slash_command("ban", "Ban a user")
-@sosad.check(sosad.has_permissions(hikari.Permissions.BAN_MEMBERS))
-@sosad.cooldown(1, 60, bucket=sosad.BucketScope.USER)
-async def ban(ctx: sosad.InteractionContext, user: hikari.User) -> None:
-    await ctx.respond(f"Banned {user.mention}")
-```
-
-## Error Handling
-
-```python
-@bot.on_error(sosad.CheckFailed)
-async def on_check(error, ctx):
-    await ctx.respond(str(error)).ephemeral()
-```
-
 ## Background Tasks
 
 ```python
 @sosad.task(interval=300)
 async def cleanup():
     await db.cleanup()
-
-@sosad.task(interval=60, once=True)
-async def startup():
-    print("Ready!")
 ```
 
 ## Auto Plugin Discovery
@@ -182,6 +158,14 @@ async def eight_ball(ctx: sosad.InteractionContext, question: str) -> None:
 
 No `load_plugins()` needed — SoSad auto-discovers `plugins/` at startup.
 
+## CLI Scaffolding
+
+```bash
+sosad new mybot
+cd mybot
+uv run bot.py
+```
+
 ## Settings
 
 ```python
@@ -194,19 +178,19 @@ class Config(sosad.Settings):
 config = Config()
 ```
 
-## CLI
+## From Hobby to Production
 
-```bash
-# Create a new project
-sosad new mybot
+> "ไม่ได้ย้าย Framework แต่เหมือนอัปเกรด discord.py"
 
-# Output:
-# mybot/
-#  ├── bot.py
-#  ├── plugins/
-#  ├── config.py
-#  ├── pyproject.toml
-#  └── .env
+```python
+import sosad as discord
+
+bot = discord.Bot(...)
+
+# Production features — enable when ready
+bot.enable_plugins()      # auto-discover plugins/
+bot.enable_metrics()       # prometheus metrics
+bot.enable_tasks()         # background task scheduler
 ```
 
 ## Requirements
@@ -214,7 +198,6 @@ sosad new mybot
 - Python 3.12+
 - hikari >= 2.0.0
 - pydantic >= 2.0
-- pydantic-settings >= 2.0
 
 ## License
 
