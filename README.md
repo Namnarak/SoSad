@@ -14,6 +14,21 @@ Upgrade your bot with minimal rewrites.
 pip install sosad
 ```
 
+## ✨ Features
+
+| | |
+|---|---|
+| ✓ discord.py Compatibility | Change 1 import line |
+| ✓ Native Hikari-first API | Type-safe, FastAPI-style DI |
+| ✓ Persistent Views + Paginator | Stateful components with built-in navigation |
+| ✓ Background Tasks | `@sosad.task(interval=n)` — cron without the pain |
+| ✓ REST + Gateway modes | Serverless-ready or WebSocket |
+| ✓ Plugin Auto Discovery | Drop files in `plugins/`, done |
+| ✓ CLI Scaffold | `sosad init mybot` — ready in seconds |
+| ✓ ASGI Middleware Pipeline | Before, After, Short-circuit |
+| ✓ Auto Rate Limiting | Per-route bucket tracking |
+| ✓ Type-safe | Pyright strict mode |
+
 ## Quick Migration — Before → After
 
 ```python
@@ -51,6 +66,28 @@ bot.run("TOKEN")
 - Middleware pipeline
 - Background task scheduler
 
+## Architecture
+
+```
+  Discord Gateway / HTTP
+         │
+      Hikari (RESTBot / GatewayBot)
+         │
+  ┌─────────────────────────────┐
+  │          SoSad              │
+  ├─────────────────────────────┤
+  │  Commands    │  Middleware  │
+  ├──────────────┼──────────────┤
+  │  Components  │  Scheduler   │
+  ├──────────────┼──────────────┤
+  │  Plugins     │  DI          │
+  ├──────────────┼──────────────┤
+  │  Events      │  API Client  │
+  └─────────────────────────────┘
+         │
+    Your Bot Code
+```
+
 ## discord.py Compatibility
 
 ≈ 90% of discord.py API is supported out of the box:
@@ -83,7 +120,7 @@ bot.run("TOKEN")
 - Prefix commands (`!ping`) — slash commands only
 - Voice / Guild channels / Member editing via compat (use hikari directly)
 
-## What Changes
+## Why SoSad?
 
 | Feature | discord.py | SoSad |
 |---|---|---|
@@ -276,6 +313,8 @@ config = Config()
 
 ## Performance
 
+*Internal benchmarks on Python 3.12 / Linux x86_64. Results vary by machine and workload.*
+
 | Metric | discord.py | SoSad |
 |---|---|---|
 | Startup (cold) | ~1.2s | ~0.8s |
@@ -283,7 +322,7 @@ config = Config()
 | Memory (idle) | ~45MB | ~35MB |
 | REST mode memory | N/A | ~15MB |
 
-*Preliminary, machine-dependent. SoSad's overhead is minimal — it's a thin layer on Hikari.*
+SoSad's overhead is minimal — it adds a thin layer of abstraction on top of Hikari.
 
 ## Roadmap
 
