@@ -3,11 +3,6 @@ name: Deploy Docs
 on:
   push:
     branches: [main]
-    paths:
-      - 'docs/**'
-      - 'mkdocs.yml'
-      - 'landing/**'
-      - '.github/workflows/deploy-docs.yml'
 
 permissions:
   contents: read
@@ -28,22 +23,23 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install dependencies
+      - name: Install mkdocs-material
         run: pip install mkdocs-material
 
       - name: Build wiki
         run: mkdocs build -d site
 
-      - name: Assemble deploy
+      - name: Prepare site
         run: |
-          mkdir -p deploy/wiki
-          cp -r site/* deploy/wiki/
-          cp landing/index.html deploy/
+          # Copy wiki content into site
+          cp -r site/* .
+          # Replace root index with landing page
+          cp landing/index.html index.html
 
-      - name: Upload artifact
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: deploy
+          path: .
 
   deploy:
     environment:
