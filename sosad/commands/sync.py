@@ -74,18 +74,20 @@ class CommandSyncer:
         """Sync global commands to Discord (may take ~1 hour to propagate)."""
         result = SyncResult()
         cmd_dicts = self._registry.build_hikari_commands()
+        logger.info("Building %d command builders...", len(cmd_dicts))
         builders = [self._build_command(cmd) for cmd in cmd_dicts]
 
         try:
+            logger.info("Calling set_application_commands with %d builders...", len(builders))
             synced = await self._rest.set_application_commands(
                 self._app_id,
                 commands=builders,
             )
             result.commands_synced = len(synced)
-            logger.info("Global sync: %d commands synced", result.commands_synced)
+            logger.info("Global sync SUCCESS: %d commands synced", result.commands_synced)
         except Exception as exc:
             result.errors.append(f"Failed to sync global commands: {exc}")
-            logger.exception("Global command sync failed")
+            logger.exception("Global command sync FAILED")
 
         return result
 
@@ -93,9 +95,11 @@ class CommandSyncer:
         """Sync commands to a specific guild (instant, no propagation delay)."""
         result = SyncResult()
         cmd_dicts = self._registry.build_hikari_commands()
+        logger.info("Building %d guild command builders...", len(cmd_dicts))
         builders = [self._build_command(cmd) for cmd in cmd_dicts]
 
         try:
+            logger.info("Calling set_application_commands for guild %s...", guild_id)
             synced = await self._rest.set_application_commands(
                 self._app_id,
                 commands=builders,
@@ -103,13 +107,13 @@ class CommandSyncer:
             )
             result.commands_synced = len(synced)
             logger.info(
-                "Guild sync (%s): %d commands synced",
+                "Guild sync SUCCESS (%s): %d commands synced",
                 guild_id,
                 result.commands_synced,
             )
         except Exception as exc:
             result.errors.append(f"Failed to sync guild commands: {exc}")
-            logger.exception("Guild command sync failed for %s", guild_id)
+            logger.exception("Guild command sync FAILED for %s", guild_id)
 
         return result
 

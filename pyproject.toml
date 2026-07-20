@@ -1,6 +1,6 @@
 [project]
 name = "sosad"
-version = "0.2.7"
+version = "0.2.8"
 description = "A modern, modular, type-safe Discord framework built on Hikari"
 requires-python = ">=3.12"
 dependencies = [

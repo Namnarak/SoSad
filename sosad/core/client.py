@@ -183,11 +183,15 @@ class Client(BaseClient):
     async def _sync_all_commands(self) -> None:
         """Sync all commands — global + guild if set."""
         if self._bot is None or self._registry is None:
+            logger.warning("Sync skipped: bot=%s, registry=%s", self._bot, self._registry)
             return
         from sosad.commands.sync import CommandSyncer
         me = self._bot.get_me()
         if me is None:
+            logger.warning("Sync skipped: bot.get_me() returned None")
             return
+
+        logger.info("Syncing %d commands...", self._registry.command_count)
         syncer = CommandSyncer(self._bot.rest, self._registry, me.id)
 
         # Always sync global commands
@@ -195,6 +199,8 @@ class Client(BaseClient):
         if result.errors:
             for err in result.errors:
                 logger.error(err)
+        else:
+            logger.info("Global sync done: %d commands synced", result.commands_synced)
 
         # Also sync guild-specific commands if guild_id is set
         if self._guild_id is not None:
@@ -202,6 +208,8 @@ class Client(BaseClient):
             if guild_result.errors:
                 for err in guild_result.errors:
                     logger.error(err)
+            else:
+                logger.info("Guild sync done: %d commands synced", guild_result.commands_synced)
 
     async def close(self) -> None:
         logger.info("SoSad shutting down...")
