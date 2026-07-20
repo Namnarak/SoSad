@@ -9,8 +9,9 @@
 ![Discord API](https://img.shields.io/badge/discord_api-v10-5865F2)
 ![CI](https://img.shields.io/github/actions/workflow/status/Namnarak/SoSad/ci.yml?branch=main&label=CI)
 
-A modern, modular, type-safe Discord framework built on [Hikari](https://github.com/hikari-py/hikari).
-Designed to ease migration from discord.py while providing modern architecture such as dependency injection, middleware, and REST deployment.
+A modern, modular, type-safe Discord framework built on [Hikari](https://github.com/hikari-py/hikari) — the fastest, most maintainable Discord library for Python.
+
+SoSad adds high-level features on top of Hikari's solid foundation: dependency injection, middleware pipeline, persistent components, and REST deployment. Designed to ease migration from discord.py while providing modern architecture.
 
 ```
 pip install sosad
