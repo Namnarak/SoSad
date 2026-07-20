@@ -2,39 +2,48 @@
 
 > Comparison table: SoSad vs discord.py, lightbulb, interactions.py, hikari
 
+## Architecture
+
+| Feature | SoSad |
+|---------|-------|
+| Async-first | ✅ |
+| Type-safe API | ✅ |
+| Dependency Injection | ✅ |
+| Middleware Pipeline | ✅ |
+| Gateway Mode | ✅ |
+| REST Mode | ✅ |
+| Plugin Loader | ✅ |
+| Auto Discovery | ✅ |
+| Lifecycle Events | ✅ |
+| Extension System | ✅ |
+| Context Injection | ✅ |
+| Builder Pattern | ✅ |
+| Pyright Strict | ✅ |
+
 ## Feature Comparison
 
 | Feature | SoSad | discord.py | lightbulb | interactions.py | hikari |
 |---------|-------|------------|-----------|-----------------|--------|
 | **Python Version** | 3.12+ | 3.8+ | 3.10+ | 3.10+ | 3.10+ |
-| **Type Safety** | ✅ Pyright strict | ❌ Partial | ✅ Pyright | ✅ Pyright | ✅ Pyright |
+| **Type Safety** | ✅ Pyright strict | ⚠️ Partial | ✅ Pyright | ✅ Pyright | ✅ Pyright |
 | **Slash Commands** | ✅ Native | ✅ app_commands | ✅ Native | ✅ Native | ⚠️ Manual |
 | **Prefix Commands** | ✅ `!ping` | ✅ `!ping` | ✅ `!ping` | ❌ No | ⚠️ Manual |
 | **Components** | ✅ Builder | ✅ ui module | ✅ Builder | ✅ Native | ⚠️ Manual |
-| **Persistent Views** | ✅ Built-in | ⚠️ Manual | ⚠️ Manual | ⚠️ Manual | ❌ No |
+| **Persistent Views** | ✅ Built-in | ⚠️ Requires registration | ⚠️ Requires registration | ⚠️ Requires registration | ❌ No |
 | **Paginator** | ✅ Built-in | ❌ No | ❌ No | ❌ No | ❌ No |
 | **DI Container** | ✅ FastAPI-style | ❌ No | ❌ No | ❌ No | ❌ No |
 | **Middleware** | ✅ ASGI-style | ⚠️ Hooks | ⚠️ Hooks | ❌ No | ❌ No |
 | **Plugin System** | ✅ Auto-discover | ⚠️ Manual | ✅ Auto-discover | ✅ Extensions | ❌ No |
-| **Background Tasks** | ✅ `@sosad.task` | ✅ `@tasks.loop` | ✅ `@task` | ❌ No | ❌ No |
+| **Background Tasks** | ✅ `@sosad.task` | ✅ `@tasks.loop` | ✅ `@task` | ✅ Task extension | ❌ No |
 | **REST Mode** | ✅ Serverless | ❌ No | ❌ No | ❌ No | ✅ RESTBot |
 | **Rate Limiting** | ✅ Auto per-route | ⚠️ Basic | ⚠️ Basic | ⚠️ Basic | ⚠️ Basic |
-| **Error Pipeline** | ✅ Typed | ⚠️ Basic | ⚠️ Basic | ⚠️ Basic | ❌ No |
+| **Error Pipeline** | ✅ Typed exceptions + handlers | ⚠️ Basic | ⚠️ Basic | ⚠️ Basic | ❌ No |
 | **Cooldown System** | ✅ Bucket-based | ✅ `@cooldown` | ✅ `@cooldown` | ❌ No | ❌ No |
 | **Permission Checks** | ✅ Decorators | ✅ `@has perms` | ✅ `@has perms` | ✅ Native | ⚠️ Manual |
 | **CLI Scaffold** | ✅ `sosad init` | ❌ No | ❌ No | ✅ `interactions init` | ❌ No |
-| **discord.py Compat** | ✅ ~90% | ✅ Native | ❌ No | ❌ No | ❌ No |
+| **discord.py Compat** | ✅ High compatibility | ✅ Native | ❌ No | ❌ No | ❌ No |
 | **Hikari Native** | ✅ Full access | ❌ No | ✅ Full access | ❌ No | ✅ Native |
 | **Serverless Ready** | ✅ REST mode | ❌ No | ❌ No | ❌ No | ✅ RESTBot |
-
-## Performance Comparison
-
-| Metric | SoSad | discord.py | lightbulb | hikari |
-|--------|-------|------------|-----------|--------|
-| **Startup (cold)** | ~0.8s | ~1.2s | ~0.9s | ~0.7s |
-| **Memory (idle)** | ~35MB | ~45MB | ~38MB | ~30MB |
-| **REST Mode Memory** | ~15MB | N/A | N/A | ~12MB |
-| **Interaction Latency** | ~40-80ms | ~40-80ms | ~40-80ms | ~40-80ms |
 
 ## Code Comparison
 
@@ -72,7 +81,7 @@ async def on_confirm(ctx):
 
 await ctx.respond().components(view).send()
 
-# discord.py (manual implementation required)
+# discord.py
 class ConfirmView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=60.0)
@@ -80,6 +89,8 @@ class ConfirmView(discord.ui.View):
     @discord.ui.button(label="Confirm")
     async def confirm(self, interaction, button):
         await interaction.response.send_message("Confirmed!")
+
+# Note: discord.py requires manual registration with bot.add_view()
 ```
 
 ### Dependency Injection
@@ -113,13 +124,13 @@ async def check_db(ctx: sosad.InteractionContext, db: Database) -> None:
 | **Community plugins/ecosystem** | discord.py |
 | **Performance critical** | hikari |
 
-## SoSad Unique Features
+## SoSad Key Features
 
-1. **discord.py Compatibility Layer** - Change 1 import line to migrate
+1. **discord.py Compatibility Layer** - High compatibility with common discord.py APIs, designed to ease migration
 2. **Persistent Views + Paginator** - Built-in stateful components
 3. **FastAPI-style DI** - Auto-resolve dependencies by type
 4. **ASGI Middleware Pipeline** - Before/after/short-circuit
-5. **REST Mode** - Serverless-ready with 15MB memory
+5. **REST Mode** - Serverless-ready architecture
 6. **CLI Scaffold** - `sosad init mybot` ready in seconds
 7. **Plugin Auto-Discovery** - Drop files in `plugins/`, done
 8. **Auto Rate Limiting** - Per-route bucket tracking
@@ -152,12 +163,4 @@ bot = sosad.Client(token="...", intents=hikari.Intents.ALL_UNPRIVILEGED)
 
 ## Conclusion
 
-SoSad is the most feature-rich Discord framework for Python, offering:
-- Best discord.py compatibility (~90%)
-- FastAPI-style dependency injection
-- Built-in persistent views and paginator
-- ASGI middleware pipeline
-- Serverless-ready REST mode
-- Type-safe with Pyright strict mode
-
-For new projects requiring advanced features (DI, middleware, serverless), SoSad is the best choice. For simple bots, discord.py or lightbulb may be simpler.
+SoSad focuses on combining discord.py compatibility with modern architecture such as dependency injection, middleware and REST mode. For new projects requiring advanced features (DI, middleware, serverless), SoSad is a strong option. For simple bots, discord.py or lightbulb may be simpler.
