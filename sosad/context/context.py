@@ -37,9 +37,34 @@ class ResponseBuilder:
     _files: tuple[hikari.File, ...] = ()
     _flags: hikari.MessageFlag = hikari.MessageFlag.NONE
     _components: tuple[Any, ...] = ()
+    _modal: Any = None
 
     def __await__(self) -> Any:
         return self.send().__await__()
+
+    def components(self, *components: Any) -> Self:
+        return self.__class__(
+            _interaction=self._interaction,
+            _response_type=self._response_type,
+            _content=self._content,
+            _embeds=self._embeds,
+            _files=self._files,
+            _flags=self._flags,
+            _components=components,
+            _modal=self._modal,
+        )
+
+    def modal(self, modal: Any) -> Self:
+        return self.__class__(
+            _interaction=self._interaction,
+            _response_type=self._response_type,
+            _content=self._content,
+            _embeds=self._embeds,
+            _files=self._files,
+            _flags=self._flags,
+            _components=self._components,
+            _modal=modal,
+        )
 
     def content(self, text: str) -> Self:
         return self.__class__(
@@ -50,6 +75,7 @@ class ResponseBuilder:
             _files=self._files,
             _flags=self._flags,
             _components=self._components,
+            _modal=self._modal,
         )
 
     def embed(self, embed: hikari.Embed) -> Self:
@@ -61,6 +87,7 @@ class ResponseBuilder:
             _files=self._files,
             _flags=self._flags,
             _components=self._components,
+            _modal=self._modal,
         )
 
     def embeds(self, *embeds: hikari.Embed) -> Self:
@@ -72,6 +99,7 @@ class ResponseBuilder:
             _files=self._files,
             _flags=self._flags,
             _components=self._components,
+            _modal=self._modal,
         )
 
     def file(self, file: hikari.File) -> Self:
@@ -83,6 +111,7 @@ class ResponseBuilder:
             _files=(*self._files, file),
             _flags=self._flags,
             _components=self._components,
+            _modal=self._modal,
         )
 
     def files(self, *files: hikari.File) -> Self:
@@ -94,6 +123,7 @@ class ResponseBuilder:
             _files=(*self._files, *files),
             _flags=self._flags,
             _components=self._components,
+            _modal=self._modal,
         )
 
     def ephemeral(self) -> Self:
@@ -105,6 +135,7 @@ class ResponseBuilder:
             _files=self._files,
             _flags=self._flags | hikari.MessageFlag.EPHEMERAL,
             _components=self._components,
+            _modal=self._modal,
         )
 
     def flag(self, flag: hikari.MessageFlag) -> Self:
@@ -116,9 +147,17 @@ class ResponseBuilder:
             _files=self._files,
             _flags=self._flags | flag,
             _components=self._components,
+            _modal=self._modal,
         )
 
     async def send(self) -> Any:
+        if self._modal is not None:
+            data = self._modal.build()
+            return await self._interaction.create_modal_response(
+                data["title"],
+                data["custom_id"],
+                components=data["components"],
+            )
         kwargs: dict[str, Any] = {}
         if self._content is not None:
             kwargs["content"] = self._content
@@ -126,6 +165,8 @@ class ResponseBuilder:
             kwargs["embeds"] = self._embeds
         if self._files:
             kwargs["attachments"] = self._files
+        if self._components:
+            kwargs["components"] = self._components
         if self._flags is not hikari.MessageFlag.NONE:
             kwargs["flags"] = self._flags
         return await self._interaction.create_initial_response(
