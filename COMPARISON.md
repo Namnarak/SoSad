@@ -22,13 +22,13 @@
 
 ## Feature Comparison
 
-| Feature | SoSad | discord.py | lightbulb | interactions.py | hikari |
-|---------|-------|------------|-----------|-----------------|--------|
+| Feature | SoSad | discord.py | lightbulb | interactions.py | hikari (+ extensions) |
+|---------|-------|------------|-----------|-----------------|----------------------|
 | **Python Version** | 3.12+ | 3.8+ | 3.10+ | 3.10+ | 3.10+ |
 | **Type Safety** | ✅ Pyright strict | ⚠️ Partial | ✅ Pyright | ✅ Pyright | ✅ Pyright |
-| **Slash Commands** | ✅ Native | ✅ app_commands | ✅ Native | ✅ Native | ⚠️ Manual |
-| **Prefix Commands** | ✅ `!ping` | ✅ `!ping` | ✅ `!ping` | ❌ No | ⚠️ Manual |
-| **Components** | ✅ Builder | ✅ ui module | ✅ Builder | ✅ Native | ⚠️ Manual |
+| **Slash Commands** | ✅ Native | ✅ app_commands | ✅ Native | ✅ Native | ⚠️ Via lightbulb/tanjun |
+| **Prefix Commands** | ✅ `!ping` | ✅ `!ping` | ✅ `!ping` | ❌ No | ⚠️ Via lightbulb |
+| **Components** | ✅ Builder | ✅ ui module | ✅ Builder | ✅ Native | ⚠️ Via lightbulb |
 | **Persistent Views** | ✅ Built-in | ⚠️ Requires registration | ⚠️ Requires registration | ⚠️ Requires registration | ❌ No |
 | **Paginator** | ✅ Built-in | ❌ No | ❌ No | ❌ No | ❌ No |
 | **DI Container** | ✅ FastAPI-style | ❌ No | ❌ No | ❌ No | ❌ No |
@@ -44,6 +44,8 @@
 | **discord.py Compat** | ✅ High compatibility | ✅ Native | ❌ No | ❌ No | ❌ No |
 | **Hikari Native** | ✅ Full access | ❌ No | ✅ Full access | ❌ No | ✅ Core library |
 | **Serverless Ready** | ✅ REST mode | ❌ No | ❌ No | ❌ No | ✅ RESTBot |
+
+> **Note:** hikari is a core library, not a full framework. It provides REST API + Gateway connection but requires extension libraries (lightbulb, tanjun, yuyo) for features like commands, components, and events.
 
 ## Code Comparison
 
