@@ -78,26 +78,24 @@ class CommandRegistry:
 
         return None
 
-    def build_hikari_commands(self) -> list[hikari.SnowflakeBasedJSONBuilder[Any]]:
-        """Convert internal metadata to Hikari command builders for API sync."""
-        builders: list[hikari.SnowflakeBasedJSONBuilder[Any]] = []
+    def build_hikari_commands(self) -> list[Any]:
+        """Convert internal metadata to Hikari command dicts for API sync."""
+        builders: list[dict[str, Any]] = []
 
         for meta in self._commands.values():
-            builder = hikari.impl.CommandBuilder()
-            builder.name = meta.name
-            builder.description = meta.description
-            builder.type = hikari.CommandType.SLASH
+            cmd: dict[str, Any] = {
+                "name": meta.name,
+                "description": meta.description,
+                "type": hikari.CommandType.SLASH,
+            }
             if meta.default_member_permissions is not None:
-                builder.default_member_permissions = meta.default_member_permissions
+                cmd["default_member_permissions"] = str(meta.default_member_permissions)
             if meta.is_dm_only:
-                builder.integration_types = [
-                    hikari.ApplicationIntegrationType.USER_INSTALL,
-                ]
-                builder.contexts = [
+                cmd["integration_types"] = [hikari.ApplicationIntegrationType.USER_INSTALL]
+                cmd["contexts"] = [
                     hikari.InteractionContextType.BOT_DM,
                     hikari.InteractionContextType.PRIVATE_CHANNEL,
                 ]
-
             options: list[dict[str, Any]] = []
             for opt in meta.options:
                 opt_data: dict[str, Any] = {
@@ -111,23 +109,20 @@ class CommandRegistry:
                         {"name": c[0], "value": c[1]} for c in opt.choices
                     ]
                 options.append(opt_data)
-            builder.options = options
-            builders.append(builder)
+            if options:
+                cmd["options"] = options
+            builders.append(cmd)
 
         for group_name, group_meta in self._groups.items():
-            builder = hikari.impl.CommandBuilder()
-            builder.name = group_name
-            builder.description = group_meta.description
-            builder.type = hikari.CommandType.SLASH
-            if group_meta.default_member_permissions is not None:
-                builder.default_member_permissions = (
-                    group_meta.default_member_permissions
-                )
-
+            cmd = {
+                "name": group_name,
+                "description": group_meta.description,
+                "type": hikari.CommandType.SLASH,
+            }
             subs = self._group_subs.get(group_name, {})
             sub_options: list[dict[str, Any]] = []
             for sub_name, sub_meta in subs.items():
-                sub_data: dict[str, Any] = {
+                sub_data = {
                     "type": hikari.OptionType.SUB_COMMAND.value,
                     "name": sub_name,
                     "description": sub_meta.description,
@@ -142,8 +137,9 @@ class CommandRegistry:
                     }
                     sub_data["options"].append(opt_data)
                 sub_options.append(sub_data)
-            builder.options = sub_options
-            builders.append(builder)
+            if sub_options:
+                cmd["options"] = sub_options
+            builders.append(cmd)
 
         return builders
 

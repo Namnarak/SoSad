@@ -42,15 +42,47 @@ class CommandSyncer:
         self._registry = registry
         self._app_id = app_id
 
+    def _build_command(self, cmd: dict[str, Any]) -> Any:
+        """Convert a command dict to a Hikari CommandBuilder."""
+        builder = self._rest.slash_command_builder(
+            cmd["name"],
+            cmd["description"],
+        )
+        if "options" in cmd:
+            for opt in cmd["options"]:
+                option_type = hikari.OptionType(opt["type"])
+                if option_type == hikari.OptionType.SUB_COMMAND:
+                    sub = builder.sub_option(
+                        opt["name"],
+                        opt["description"],
+                    )
+                    if "options" in opt:
+                        for sub_opt in opt["options"]:
+                            sub.option(
+                                hikari.OptionType(sub_opt["type"]),
+                                sub_opt["name"],
+                                sub_opt["description"],
+                                is_required=sub_opt.get("required", True),
+                            )
+                else:
+                    builder.option(
+                        option_type,
+                        opt["name"],
+                        opt["description"],
+                        is_required=opt.get("required", True),
+                    )
+        return builder
+
     async def sync(self) -> SyncResult:
         """Sync global commands to Discord (may take ~1 hour to propagate)."""
         result = SyncResult()
-        local_builders = self._registry.build_hikari_commands()
+        cmd_dicts = self._registry.build_hikari_commands()
+        builders = [self._build_command(cmd) for cmd in cmd_dicts]
 
         try:
             synced = await self._rest.set_application_commands(
                 self._app_id,
-                commands=local_builders,
+                commands=builders,
             )
             result.commands_synced = len(synced)
             logger.info("Global sync: %d commands synced", result.commands_synced)
@@ -63,12 +95,13 @@ class CommandSyncer:
     async def sync_guild(self, guild_id: hikari.Snowflake) -> SyncResult:
         """Sync commands to a specific guild (instant, no propagation delay)."""
         result = SyncResult()
-        local_builders = self._registry.build_hikari_commands()
+        cmd_dicts = self._registry.build_hikari_commands()
+        builders = [self._build_command(cmd) for cmd in cmd_dicts]
 
         try:
             synced = await self._rest.set_application_commands(
                 self._app_id,
-                commands=local_builders,
+                commands=builders,
                 guild=guild_id,
             )
             result.commands_synced = len(synced)
