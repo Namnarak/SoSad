@@ -2,32 +2,36 @@
 
 ## Requirements
 
-- Python 3.12+
-- hikari >= 2.0.0
-- pydantic >= 2.0
+- Python 3.10+
+- A Discord Bot Token ([Discord Developer Portal](https://discord.com/developers/applications))
 
-## Install
+## Install with pip
 
-=== "pip"
+```bash
+pip install sosad
+```
 
-    ```bash
-    pip install sosad
-    ```
+## Install with uv
 
-=== "uv"
+```bash
+uv add sosad
+```
 
-    ```bash
-    uv add sosad
-    ```
+## Install from source
 
-=== "poetry"
+```bash
+git clone https://github.com/Namnarak/SoSad.git
+cd SoSad
+uv sync
+```
 
-    ```bash
-    poetry add sosad
-    ```
-
-## Verify
+## Verify installation
 
 ```bash
 python -c "import sosad; print(sosad.__version__)"
 ```
+
+## Next steps
+
+- [Quick Start](quickstart.md) — create your first bot
+- [Migration from discord.py](migration.md) — migrate an existing bot

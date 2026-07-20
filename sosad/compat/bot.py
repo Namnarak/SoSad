@@ -8,6 +8,7 @@ from typing import Any, Literal
 import hikari
 
 import sosad
+from sosad.commands.prefix import PrefixContext, get_prefix_registry
 from sosad.compat.context import Context
 from sosad.core.base_client import BaseClient
 from sosad.core.client import Client
@@ -94,6 +95,8 @@ class Bot:
             )
 
         self._prefix_commands: dict[str, Callable[..., Any]] = {}
+        if hasattr(self._client, "prefix"):
+            self._client.prefix = command_prefix
 
     # ── Client property delegation ──
 
@@ -295,6 +298,30 @@ class Bot:
                     default_member_permissions=attr.default_member_permissions,
                 )
                 get_registry().add(meta)
+
+    def prefix_command(
+        self,
+        name: str | None = None,
+        **kwargs: Any,
+    ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+        """Register a prefix command (!ping).
+
+        Usage::
+
+            @bot.prefix_command(name="ping")
+            async def ping(ctx):
+                await ctx.send("Pong!")
+        """
+        def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
+            cmd_name = name or func.__name__
+            registry = get_prefix_registry()
+
+            async def wrapper(ctx: PrefixContext) -> None:
+                await func(ctx)
+
+            registry.add(cmd_name, wrapper)
+            return func
+        return decorator
 
     def run(self, *args: Any, **kwargs: Any) -> None:
         """Start the bot.

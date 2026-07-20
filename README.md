@@ -334,12 +334,12 @@ SoSad's overhead is minimal — it adds a thin layer of abstraction on top of Hi
 - [x] discord.py compat layer (Embed, Colour, File, utils)
 - [x] Background task scheduler
 - [x] CLI scaffold (`sosad init`)
-- [ ] Prefix commands (`!ping`)
-- [ ] `discord.app_commands` compat
-- [ ] `discord.Object` compat
-- [ ] Persist views to database
-- [ ] Metrics / OpenTelemetry
-- [ ] Webhook support
+- [x] Prefix commands (`!ping`)
+- [x] `discord.app_commands` compat
+- [x] `discord.Object` compat
+- [x] Persist views to database
+- [x] Metrics / OpenTelemetry
+- [x] Webhook support
 
 ## Requirements
 

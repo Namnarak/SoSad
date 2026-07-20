@@ -2,10 +2,19 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
 import hikari
+from hikari.files import URL
+
+
+@dataclass
+class EmbedField:
+    name: str
+    value: str
+    inline: bool = True
 
 
 class Embed(hikari.Embed):
@@ -36,13 +45,18 @@ class Embed(hikari.Embed):
         color: int | hikari.Colour | None = None,
         **kwargs: Any,
     ) -> None:
+        self._embed_fields: list[EmbedField] = []
         super().__init__(
             title=title,
             description=description,
             url=url,
             timestamp=timestamp,
-            color=color or colour,
+            color=color or colour or kwargs.pop("colour", colour),
         )
+
+    @property
+    def fields(self) -> tuple[EmbedField, ...]:
+        return tuple(self._embed_fields)
 
     def add_field(
         self,
@@ -51,7 +65,10 @@ class Embed(hikari.Embed):
         inline: bool = True,
     ) -> Embed:
         """Add a field (inline defaults to True, matching discord.py)."""
-        super().add_field(name=name, value=value, inline=inline)
+        field = EmbedField(name=name, value=str(value), inline=inline)
+        # Delegate to hikari for proper rendering
+        super().add_field(name=name, value=str(value), inline=inline)
+        self._embed_fields.append(field)
         return self
 
     def set_author(
@@ -73,15 +90,39 @@ class Embed(hikari.Embed):
         super().set_footer(text=text, icon=icon_url)
         return self
 
+    def set_image(
+        self,
+        *,
+        url: str | None = None,
+        **kwargs: Any,
+    ) -> Embed:
+        """Set image by URL (discord.py compat)."""
+        if url:
+            super().set_image(URL(url))
+        elif kwargs:
+            super().set_image(**kwargs)
+        return self
+
+    def set_thumbnail(
+        self,
+        *,
+        url: str | None = None,
+        **kwargs: Any,
+    ) -> Embed:
+        """Set thumbnail by URL (discord.py compat)."""
+        if url:
+            super().set_thumbnail(URL(url))
+        elif kwargs:
+            super().set_thumbnail(**kwargs)
+        return self
+
     def remove_field(self, index: int) -> Embed:
-        fields = list(self.fields)
-        if 0 <= index < len(fields):
-            fields.pop(index)
-            object.__setattr__(self, "fields", tuple(fields))
+        if 0 <= index < len(self._embed_fields):
+            self._embed_fields.pop(index)
         return self
 
     def clear_fields(self) -> Embed:
-        object.__setattr__(self, "fields", ())
+        self._embed_fields.clear()
         return self
 
     def set_field_at(
@@ -91,18 +132,11 @@ class Embed(hikari.Embed):
         value: str,
         inline: bool = True,
     ) -> Embed:
-        fields = list(self.fields)
-        if 0 <= index < len(fields):
-            from dataclasses import dataclass
-
-            @dataclass
-            class _Field:
-                name: str
-                value: str
-                inline: bool
-
-            fields[index] = _Field(name=name, value=value, inline=inline)
-            object.__setattr__(self, "fields", tuple(fields))
+        if 0 <= index < len(self._embed_fields):
+            self._embed_fields[index] = EmbedField(name=name, value=value, inline=inline)
+        else:
+            msg = f"Field index {index} out of range for {len(self._embed_fields)} fields"
+            raise IndexError(msg)
         return self
 
     def to_dict(self) -> dict[str, Any]:
@@ -125,7 +159,7 @@ class Embed(hikari.Embed):
             } if self.author else None,
             "fields": [
                 {"name": f.name, "value": f.value, "inline": f.inline}
-                for f in self.fields
+                for f in self._embed_fields
             ],
         }
 

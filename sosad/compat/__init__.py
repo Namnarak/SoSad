@@ -23,12 +23,14 @@ from hikari import Intents as Intents
 from hikari import PermissionOverwrite as PermissionOverwrite
 from hikari import Permissions as Permissions
 
+from sosad.compat import app_commands as app_commands
 from sosad.compat.bot import Bot
 from sosad.compat.colour import Color, Colour
 from sosad.compat.context import Context
 from sosad.compat.embed import Embed
 from sosad.compat.ext import Cog, cog
 from sosad.compat.file import File
+from sosad.compat.object import Object as Object
 from sosad.compat.utils import (
     escape_markdown,
     escape_markdown_and_mentions,
@@ -39,6 +41,10 @@ from sosad.compat.utils import (
     snowflake_time,
     utcnow,
 )
+from sosad.compat.voice import VoiceChannel as VoiceChannel
+from sosad.compat.voice import VoiceClient as VoiceClient
+from sosad.compat.voice import VoiceState as VoiceState
+from sosad.compat.webhook import Webhook as Webhook
 
 __all__ = [
     "Bot",
@@ -50,8 +56,15 @@ __all__ = [
     "Color",
     "File",
     "Intents",
+    "Object",
     "Permissions",
     "PermissionOverwrite",
+    "Webhook",
+    "VoiceChannel",
+    "VoiceClient",
+    "VoiceState",
+    "VoiceRegion",
+    "app_commands",
     "get",
     "find",
     "escape_markdown",

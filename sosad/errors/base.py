@@ -29,10 +29,10 @@ class RateLimited(CommandError):
 
     def __init__(
         self,
-        retry_after: float,
-        *,
-        ctx: InteractionContext | None = None,
         message: str | None = None,
+        *,
+        retry_after: float = 0.0,
+        ctx: InteractionContext | None = None,
     ) -> None:
         super().__init__(message or f"Rate limited. Try again in {retry_after:.1f}s", ctx=ctx)
         self.retry_after = retry_after

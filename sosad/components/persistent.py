@@ -182,7 +182,13 @@ class PersistentView:
             view = cls.views.pop(vid, None)
             if view is not None:
                 import asyncio
-                asyncio.ensure_future(view.on_timeout())
+                try:
+                    loop = asyncio.get_running_loop()
+                    loop.create_task(view.on_timeout())
+                except RuntimeError:
+                    import inspect
+                    if inspect.iscoroutinefunction(view.on_timeout):
+                        asyncio.run(view.on_timeout())
 
     @classmethod
     def get_view(cls, view_id: str) -> PersistentView | None:

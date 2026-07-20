@@ -12,6 +12,13 @@ from sosad.components.base import (
 from sosad.components.decorators import button, modal, select
 from sosad.components.paginator import Paginator
 from sosad.components.persistent import PersistentView
+from sosad.components.storage import (
+    FileViewStorage,
+    InMemoryViewStorage,
+    ViewStorage,
+    get_view_storage,
+    set_view_storage,
+)
 
 __all__ = [
     "ButtonHandler",
@@ -23,6 +30,11 @@ __all__ = [
     "SelectMeta",
     "Paginator",
     "PersistentView",
+    "ViewStorage",
+    "InMemoryViewStorage",
+    "FileViewStorage",
+    "get_view_storage",
+    "set_view_storage",
     "button",
     "modal",
     "select",

@@ -55,13 +55,15 @@ class Paginator(PersistentView):
         show_first_last: bool = True,
         show_stop: bool = False,
         auto_wire: bool = True,
+        page_range_size: int | None = None,
     ) -> None:
         super().__init__(timeout=timeout)
         self.pages = pages
-        self.current = 0
+        self._current_page = 0
         self._renderer = renderer or (lambda p: p)
         self._show_first_last = show_first_last
         self._auto_wired = False
+        self._page_range_size = page_range_size
 
         if auto_wire:
             self._add_nav_buttons(show_first_last, show_stop)
@@ -97,48 +99,91 @@ class Paginator(PersistentView):
 
     @property
     def current_page(self) -> Any:
-        if 0 <= self.current < len(self.pages):
-            return self._renderer(self.pages[self.current])
+        if 0 <= self._current_page < len(self.pages):
+            return self._renderer(self.pages[self._current_page])
         return self._renderer(self.pages[0])
+
+    @property
+    def current_page_data(self) -> Any:
+        if 0 <= self._current_page < len(self.pages):
+            return self.pages[self._current_page]
+        return self.pages[0] if self.pages else None
 
     @property
     def total(self) -> int:
         return len(self.pages)
 
     @property
+    def total_pages(self) -> int:
+        return len(self.pages)
+
+    @property
     def can_prev(self) -> bool:
-        return self.current > 0
+        return self._current_page > 0
 
     @property
     def can_next(self) -> bool:
-        return self.current < len(self.pages) - 1
+        return self._current_page < len(self.pages) - 1
+
+    @property
+    def is_first_page(self) -> bool:
+        return self._current_page == 0
+
+    @property
+    def is_last_page(self) -> bool:
+        return self._current_page >= len(self.pages) - 1
+
+    @property
+    def page_range(self) -> tuple[int, int]:
+        if self._page_range_size is None:
+            return (0, len(self.pages) - 1) if self.pages else (0, 0)
+        start = (self._current_page // self._page_range_size) * self._page_range_size
+        end = min(start + self._page_range_size - 1, len(self.pages) - 1)
+        return (start, end)
+
+    def next_page(self) -> None:
+        if self.can_next:
+            self._current_page += 1
+
+    def previous_page(self) -> None:
+        if self.can_prev:
+            self._current_page -= 1
+
+    def first_page(self) -> None:
+        self._current_page = 0
+
+    def last_page(self) -> None:
+        self._current_page = len(self.pages) - 1
+
+    def go_to_page(self, page: int) -> None:
+        self._current_page = max(0, min(page, len(self.pages) - 1))
 
     def update_page_indicator(self) -> None:
         for comp in self._components:
             if isinstance(comp, ButtonBuilder) and comp.custom_id \
                     and "page_indicator" in comp.custom_id:
-                comp.label = f"{self.current + 1}/{self.total}"
+                comp.label = f"{self._current_page + 1}/{self.total}"
                 break
 
     async def _on_first(self, ctx: Any) -> None:
-        self.current = 0
+        self._current_page = 0
         self.update_page_indicator()
         await self._update_message(ctx)
 
     async def _on_prev(self, ctx: Any) -> None:
         if self.can_prev:
-            self.current -= 1
+            self._current_page -= 1
         self.update_page_indicator()
         await self._update_message(ctx)
 
     async def _on_next(self, ctx: Any) -> None:
         if self.can_next:
-            self.current += 1
+            self._current_page += 1
         self.update_page_indicator()
         await self._update_message(ctx)
 
     async def _on_last(self, ctx: Any) -> None:
-        self.current = len(self.pages) - 1
+        self._current_page = len(self.pages) - 1
         self.update_page_indicator()
         await self._update_message(ctx)
 

@@ -106,7 +106,11 @@ def parse_route(method: str, path: str) -> str:
     Discord groups rate limits by major parameters (guild_id, channel_id, webhook_id).
     These are extracted from the path and used as part of the route key.
     """
-    parts = path.strip("/").split("/")
+    stripped = path.strip("/")
+    if not stripped:
+        return method.upper()
+
+    parts = stripped.split("/")
     key_parts: list[str] = [method.upper()]
 
     i = 0
