@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoSad — Drop in. Scale up.</title>
+    <meta name="description" content="A modern Discord framework. Change one line, get production-ready features instantly.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --purple: #7c3aed;
+            --pink: #ec4899;
+            --dark: #0a0a0f;
+            --darker: #050508;
+            --card: #111118;
+            --card-border: #1a1a2e;
+            --text: #e0e0e8;
+            --text-dim: #888;
+            --green: #34d399;
+            --gradient: linear-gradient(135deg, var(--purple), var(--pink));
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--dark);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(20px);
+            background: rgba(10,10,15,0.8);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 1.5rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links { display: flex; gap: 2rem; align-items: center; }
+        .nav-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover { color: #fff; }
+
+        .btn {
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--gradient);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(124,58,237,0.4);
+        }
+
+        .btn-outline {
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            background: transparent;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--purple);
+            background: rgba(124,58,237,0.1);
+        }
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 6rem 2rem 4rem;
+            position: relative;
+        }
+
+        .hero-bg {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(124,58,237,0.15), transparent),
+                radial-gradient(ellipse 60% 40% at 80% 50%, rgba(236,72,153,0.08), transparent);
+        }
+
+        .hero-content { position: relative; z-index: 2; max-width: 800px; }
+
+        .badge {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            background: rgba(124,58,237,0.15);
+            border: 1px solid rgba(124,58,237,0.3);
+            color: var(--purple);
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .badge-green {
+            border-color: rgba(52,211,153,0.3);
+            background: rgba(52,211,153,0.1);
+            color: var(--green);
+        }
+
+        .badge-row {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            font-size: clamp(3rem, 8vw, 5rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+        }
+
+        h1 .gradient {
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-dim);
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+        }
+
+        .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+        .code-section {
+            padding: 4rem 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .code-compare {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .code-card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .code-card-header {
+            padding: 0.8rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--card-border);
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .dot { width: 8px; height: 8px; border-radius: 50%; }
+        .dot-red { background: #ff5f56; }
+        .dot-yellow { background: #ffbd2e; }
+        .dot-green { background: #27c93f; }
+
+        .code-card pre {
+            padding: 1.5rem;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.8;
+        }
+
+        .code-card .comment { color: #555; }
+        .code-card .keyword { color: #c084fc; }
+        .code-card .string { color: #34d399; }
+        .code-card .function { color: #60a5fa; }
+        .code-card .decorator { color: #f472b6; }
+        .code-card .changed {
+            background: rgba(124,58,237,0.15);
+            display: inline;
+            padding: 0.1rem 0.3rem;
+            border-radius: 4px;
+        }
+
+        .features {
+            padding: 6rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+
+        .section-title p {
+            color: var(--text-dim);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature-card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: var(--purple);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(124,58,237,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-card p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        .compare {
+            padding: 6rem 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        th {
+            color: var(--text-dim);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td:first-child { font-weight: 500; }
+
+        .check { color: #34d399; }
+        .cross { color: #555; }
+        .new { color: var(--purple); }
+
+        .install {
+            padding: 6rem 2rem;
+            text-align: center;
+        }
+
+        .install-box {
+            max-width: 500px;
+            margin: 0 auto;
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .install-cmd {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            color: var(--purple);
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(124,58,237,0.1);
+            border-radius: 8px;
+        }
+
+        footer {
+            padding: 3rem 2rem;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--card-border);
+        }
+
+        footer a { color: var(--purple); text-decoration: none; }
+
+        .grid-bg {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                linear-gradient(rgba(124,58,237,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(124,58,237,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: -1;
+        }
+
+        @media (max-width: 768px) {
+            .code-compare { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+
+    <nav>
+        <div class="logo">SoSad</div>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#compare">Compare</a>
+            <a href="wiki/">Docs</a>
+            <a href="https://github.com/Namnarak/SoSad" target="_blank">GitHub</a>
+            <a href="https://pypi.org/project/sosad/" target="_blank" class="btn btn-outline">pip install sosad</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-content">
+            <div class="badge-row">
+                <span class="badge">v0.2.0 — Now on PyPI</span>
+                <span class="badge badge-green">≈ 90% discord.py compat</span>
+            </div>
+            <h1><span class="gradient">Drop in.</span><br>Scale up.</h1>
+            <p>A Discord framework that upgrades your bot without rewriting it. Change one import line, get production-ready features instantly. Run anywhere — gateway or serverless.</p>
+            <div class="hero-buttons">
+                <a href="wiki/" class="btn btn-primary">Get Started →</a>
+                <a href="https://github.com/Namnarak/SoSad" class="btn btn-outline">View on GitHub</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="code-section">
+        <div class="code-compare">
+            <div class="code-card">
+                <div class="code-card-header">
+                    <span class="dot dot-red"></span>
+                    <span class="dot dot-yellow"></span>
+                    <span class="dot dot-green"></span>
+                    before — discord.py
+                </div>
+                <pre><span class="keyword">import</span> discord
+
+bot = discord.<span class="function">Client</span>(
+    intents=discord.<span class="function">Intents</span>.default()
+)
+
+<span class="decorator">@bot.command</span>()
+<span class="keyword">async def</span> <span class="function">ping</span>(ctx):
+    <span class="keyword">await</span> ctx.<span class="function">send</span>(<span class="string">"Pong!"</span>)
+
+bot.<span class="function">run</span>(<span class="string">"TOKEN"</span>)</pre>
+            </div>
+            <div class="code-card">
+                <div class="code-card-header">
+                    <span class="dot dot-red"></span>
+                    <span class="dot dot-yellow"></span>
+                    <span class="dot dot-green"></span>
+                    after — SoSad
+                </div>
+                <pre><span class="changed"><span class="keyword">import</span> sosad.compat <span class="keyword">as</span> discord</span>
+
+bot = discord.<span class="function">Bot</span>(
+    intents=discord.<span class="function">Intents</span>.default()
+)
+
+<span class="decorator">@bot.command</span>(<span class="changed">name=<span class="string">"ping"</span></span>)
+<span class="keyword">async def</span> <span class="function">ping</span>(ctx):
+    <span class="keyword">await</span> ctx.<span class="function">send</span>(<span class="string">"Pong!"</span>)
+
+bot.<span class="function">run</span>(<span class="string">"TOKEN"</span>)</pre>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="section-title">
+            <h2>What you get for free</h2>
+            <p>Just change the import. Everything else is automatic.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Auto Rate Limiting</h3>
+                <p>Per-route bucket tracking. Never see HTTP 429 again.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🛡️</div>
+                <h3>Error Pipeline</h3>
+                <p>Typed exceptions, catch handlers, graceful recovery.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔧</div>
+                <h3>FastAPI-style DI</h3>
+                <p>Auto-resolve from type annotations. No inject() needed.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔗</div>
+                <h3>ASGI Middleware</h3>
+                <p>Pipeline middleware, not before/after events.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🧩</div>
+                <h3>Auto Plugin Discovery</h3>
+                <p>Drop files in plugins/. Done.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⏰</div>
+                <h3>Background Tasks</h3>
+                <p><code>@sosad.task(interval=300)</code> — cron without the pain.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎨</div>
+                <h3>View / Modal Builders</h3>
+                <p>Build components dynamically, not with decorators.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📄</div>
+                <h3>Persistent Views + Paginator</h3>
+                <p>Stateful views with timeout + built-in page navigation.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">☁️</div>
+                <h3>REST Bot (Serverless)</h3>
+                <p>No WebSocket. Deploy to Workers, Fly.io, or Railway.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎛️</div>
+                <h3>CLI Scaffold</h3>
+                <p><code>sosad init mybot</code> — Gateway, REST, or Components template.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Structured Logging</h3>
+                <p>Every request logged with timing and context.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚙️</div>
+                <h3>Settings</h3>
+                <p><code>class Config(sosad.Settings)</code> + auto .env loading.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="compare" id="compare">
+        <div class="section-title">
+            <h2>discord.py vs SoSad</h2>
+            <p>Same code. Better backend.</p>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Feature</th>
+                    <th>discord.py</th>
+                    <th>SoSad</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Rate Limiting</td>
+                    <td class="cross">Manual</td>
+                    <td class="check">✓ Auto</td>
+                </tr>
+                <tr>
+                    <td>Error Handling</td>
+                    <td class="cross">try/except</td>
+                    <td class="check">✓ Pipeline</td>
+                </tr>
+                <tr>
+                    <td>Dependency Injection</td>
+                    <td class="cross">None</td>
+                    <td class="check">✓ FastAPI-style</td>
+                </tr>
+                <tr>
+                    <td>Middleware</td>
+                    <td class="cross">Before/After</td>
+                    <td class="check">✓ ASGI Pipeline</td>
+                </tr>
+                <tr>
+                    <td>Plugins</td>
+                    <td class="cross">Manual load</td>
+                    <td class="check">✓ Auto-discover</td>
+                </tr>
+                <tr>
+                    <td>Background Tasks</td>
+                    <td class="cross">Manual asyncio</td>
+                    <td class="check">✓ <code>@task()</code></td>
+                </tr>
+                <tr>
+                    <td>Persistent Views</td>
+                    <td class="cross">Built-in</td>
+                    <td class="check">✓ <code>PersistentView</code></td>
+                </tr>
+                <tr>
+                    <td>Paginator</td>
+                    <td class="cross">3rd party</td>
+                    <td class="check">✓ Built-in</td>
+                </tr>
+                <tr>
+                    <td>REST / Serverless</td>
+                    <td class="cross">No</td>
+                    <td class="check">✓ <code>RestBot</code></td>
+                </tr>
+                <tr>
+                    <td>CLI Scaffold</td>
+                    <td class="cross">—</td>
+                    <td class="check">✓ <code>sosad init</code></td>
+                </tr>
+                <tr>
+                    <td>Type Safety</td>
+                    <td class="cross">Partial</td>
+                    <td class="check">✓ Full strict</td>
+                </tr>
+                <tr>
+                    <td>Config</td>
+                    <td class="cross">Manual .env</td>
+                    <td class="check">✓ Settings class</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="install">
+        <div class="install-box">
+            <h2>Get started in 30 seconds</h2>
+            <div class="install-cmd">$ pip install sosad</div>
+            <br>
+            <a href="wiki/guides/quickstart/" class="btn btn-primary" style="margin-top: 1rem;">Read the Quick Start →</a>
+        </div>
+    </section>
+
+    <footer>
+        <p>SoSad is open source on <a href="https://github.com/Namnarak/SoSad">GitHub</a>. MIT License.</p>
+        <p style="margin-top: 0.5rem;">Built with <a href="https://github.com/hikari-py/hikari">Hikari</a></p>
+    </footer>
+</body>
+</html>
