@@ -27,19 +27,15 @@ jobs:
         run: pip install mkdocs-material
 
       - name: Build wiki
-        run: mkdocs build -d site
+        run: mkdocs build -d _site/wiki
 
-      - name: Prepare site
-        run: |
-          # Copy wiki content into site
-          cp -r site/* .
-          # Replace root index with landing page
-          cp landing/index.html index.html
+      - name: Add landing page
+        run: cp landing/index.html _site/index.html
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
 
   deploy:
     environment:
