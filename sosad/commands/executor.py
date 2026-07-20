@@ -2,29 +2,15 @@
 
 from __future__ import annotations
 
-import inspect
 import logging
 from typing import Any
 
-import hikari
-
 from sosad.commands.models import SlashCommandMeta, SubCommandMeta
-from sosad.commands.router import build_handler_args
+from sosad.commands.router import build_handler_args, get_di_params
 from sosad.context.context import InteractionContext
-from sosad.di.markers import _InjectMarker
 from sosad.di.scopes import ScopeManager
 
 logger = logging.getLogger("sosad.executor")
-
-
-def _get_subcommand_interaction(
-    interaction: hikari.CommandInteraction,
-) -> hikari.CommandInteractionOption | None:
-    """Extract the subcommand option from a group interaction."""
-    for opt in (interaction.options or ()):
-        if opt.type == hikari.OptionType.SUB_COMMAND:
-            return opt
-    return None
 
 
 async def execute_command(
@@ -35,27 +21,28 @@ async def execute_command(
 ) -> None:
     """Execute a command handler with proper argument resolution.
 
-    1. Extract option values from the interaction
-    2. Resolve DI dependencies from the container
-    3. Call the handler
+    Auto-resolution (FastAPI-style):
+    - 'ctx' → from scope
+    - Interaction options → from interaction
+    - Complex types → from DI container automatically
     """
     handler = meta.handler
     interaction = ctx.interaction
 
     kwargs = build_handler_args(ctx, interaction, handler, scope)
 
-    # Resolve inject() parameters from DI container
+    # Auto-resolve DI parameters without inject() marker
     if container is not None:
-        sig = inspect.signature(handler)
-        for name, param in sig.parameters.items():
-            if isinstance(param.default, _InjectMarker):
+        di_params = get_di_params(handler)
+        for name, param in di_params.items():
+            if name not in kwargs:
                 try:
                     kwargs[name] = await container.resolve(param.annotation, scope)
                 except (ValueError, TypeError):
-                    logger.warning(
-                        "Could not resolve DI parameter '%s' for command %s",
+                    logger.debug(
+                        "Could not resolve DI parameter '%s' (type=%s)",
                         name,
-                        getattr(meta, "name", "unknown"),
+                        getattr(param.annotation, "__name__", str(param.annotation)),
                     )
 
     await handler(**kwargs)

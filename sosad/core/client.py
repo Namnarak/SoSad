@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 from typing import Any
 
 import hikari
@@ -30,8 +31,9 @@ class Client:
     Usage::
 
         bot = sosad.Client(token="...", intents=hikari.Intents.ALL_UNPRIVILEGED)
-        bot.load_plugins("plugins/")
-        bot.run()
+
+        # Or use 'app' alias:
+        app = sosad.Client(token="...", intents=hikari.Intents.ALL_UNPRIVILEGED)
     """
 
     def __init__(
@@ -41,12 +43,14 @@ class Client:
         intents: hikari.Intents,
         logs: str | int = "INFO",
         banner: str = "so sad",
+        auto_discover_plugins: bool = True,
         **kwargs: Any,
     ) -> None:
         self._token = token
         self._intents = intents
         self._logs = logs
         self._banner = banner
+        self._auto_discover = auto_discover_plugins
         self._hikari_kwargs = kwargs
         self._app = App()
         self._bot: hikari.GatewayBot | None = None
@@ -59,38 +63,31 @@ class Client:
 
     @property
     def app(self) -> App:
-        """The application state container."""
         return self._app
 
     @property
     def bot(self) -> hikari.GatewayBot:
-        """The underlying Hikari GatewayBot. Available after start()."""
         if self._bot is None:
             raise RuntimeError("Bot has not been started yet")
         return self._bot
 
     @property
     def rest(self) -> hikari.api.RESTProvider:
-        """The REST API client."""
         return self.bot.rest
 
     @property
     def container(self) -> Container:
-        """The DI container."""
         return self._container
 
     @property
     def error_pipeline(self) -> ErrorPipeline:
-        """The error handling pipeline."""
         return self._error_pipeline
 
     def use(self, *middlewares: Any) -> None:
-        """Register global middleware."""
         for mw in middlewares:
             self._middleware_stack.add(mw)
 
     def on_error(self, error_type: type[Exception], handler: Any = None) -> Any:
-        """Register error handler for specific exception types."""
         if handler is not None:
             self._error_pipeline.on(error_type, handler)
             return handler
@@ -101,10 +98,27 @@ class Client:
 
         return decorator
 
-    def _build_pipeline(self) -> HandlerFunc:
-        """Build the full middleware pipeline."""
-        stack = MiddlewareStack()
+    def load_plugins(self, *paths: str | Path) -> None:
+        """Load plugins from directories."""
+        from sosad.plugins.manager import PluginManager
+        manager = PluginManager(self)
+        import asyncio
+        try:
+            loop = asyncio.get_running_loop()
+            loop.create_task(manager.load_all(*paths))
+        except RuntimeError:
+            # No event loop running — store for later
+            self._pending_plugins = list(paths)  # type: ignore[attr-defined]
 
+    def _auto_discover_plugins(self) -> None:
+        """Auto-discover plugins from plugins/ directory."""
+        plugins_dir = Path("plugins")
+        if plugins_dir.is_dir() and self._auto_discover:
+            logger.info("Auto-discovering plugins from plugins/")
+            self.load_plugins(plugins_dir)
+
+    def _build_pipeline(self) -> HandlerFunc:
+        stack = MiddlewareStack()
         for mw in self._middleware_stack._middlewares:
             stack.add(mw)
 
@@ -158,12 +172,12 @@ class Client:
         self._router = CommandRouter(self._registry, self, pipeline)
 
         self._setup_listeners()
+        self._auto_discover_plugins()
         cmd_count = self._registry.command_count
         logger.info("SoSad v%s starting with %d commands...", __version__, cmd_count)
         self._bot.run()
 
     def _setup_listeners(self) -> None:
-        """Set up event listeners on the Hikari bot."""
         if self._bot is None or self._router is None:
             return
 
@@ -178,7 +192,6 @@ class Client:
             await router.handle_interaction(event)
 
     async def close(self) -> None:
-        """Graceful shutdown."""
         logger.info("SoSad shutting down...")
         if self._bot is not None:
             await self._bot.close()

@@ -9,7 +9,6 @@ from typing import Any
 import hikari
 
 from sosad.context.context import InteractionContext
-from sosad.di.markers import _InjectMarker
 from sosad.di.scopes import ScopeManager
 
 if __name__ != "__main__":
@@ -22,12 +21,21 @@ if __name__ != "__main__":
 
 logger = logging.getLogger("sosad.router")
 
+# Types that are primitive interaction options (not DI-resolved)
+_PRIMITIVE_TYPES = frozenset({
+    str, int, float, bool,
+    hikari.User, hikari.Member,
+    hikari.GuildChannel, hikari.Role, hikari.Attachment,
+})
+
+# Types that are framework-provided
+_FRAMEWORK_TYPES = frozenset({InteractionContext})
+
 
 def _extract_option_values(
     interaction: hikari.CommandInteraction,
     handler: Any,
 ) -> dict[str, Any]:
-    """Extract option values from an interaction, matching them to handler parameters."""
     options_list = interaction.options or []
     option_map: dict[str, Any] = {}
     resolved = interaction.resolved
@@ -50,9 +58,7 @@ def _resolve_value(
     option: hikari.CommandInteractionOption,
     resolved: hikari.ResolvedOptionData | None,
 ) -> Any:
-    """Resolve a single option value, handling types that need resolved data."""
     value = option.value
-
     if resolved is None:
         return value
 
@@ -92,7 +98,6 @@ def build_handler_args(
     handler: Any,
     scope: ScopeManager,
 ) -> dict[str, Any]:
-    """Build the argument dict for calling a command handler."""
     option_values = _extract_option_values(interaction, handler)
     kwargs: dict[str, Any] = {}
 
@@ -101,24 +106,36 @@ def build_handler_args(
         if name == "ctx":
             kwargs["ctx"] = ctx
             continue
-
-        if isinstance(param.default, _InjectMarker):
+        if param.annotation in _FRAMEWORK_TYPES:
+            kwargs["ctx"] = ctx
             continue
 
-        if name in option_values:
+    for name in option_values:
+        if name not in kwargs:
             kwargs[name] = option_values[name]
 
     return kwargs
 
 
+def get_di_params(handler: Any) -> dict[str, inspect.Parameter]:
+    """Get parameters that need DI resolution."""
+    sig = inspect.signature(handler)
+    di_params: dict[str, inspect.Parameter] = {}
+    for name, param in sig.parameters.items():
+        if name in ("ctx", "self", "cls"):
+            continue
+        if param.annotation is inspect.Parameter.empty:
+            continue
+        if param.annotation in _FRAMEWORK_TYPES:
+            continue
+        if param.annotation in _PRIMITIVE_TYPES:
+            continue
+        di_params[name] = param
+    return di_params
+
+
 class CommandRouter:
-    """Routes InteractionCreateEvent to the correct handler through middleware.
-
-    Usage::
-
-        router = CommandRouter(registry, client, pipeline)
-        await router.handle_interaction(event)
-    """
+    """Routes InteractionCreateEvent to the correct handler through middleware."""
 
     def __init__(
         self,
@@ -133,7 +150,6 @@ class CommandRouter:
     async def handle_interaction(
         self, event: hikari.InteractionCreateEvent
     ) -> None:
-        """Entry point for all interaction events."""
         interaction = event.interaction
         if not isinstance(interaction, hikari.CommandInteraction):
             return
@@ -161,4 +177,4 @@ class CommandRouter:
             scope.cleanup()
 
 
-__all__ = ["CommandRouter", "build_handler_args"]
+__all__ = ["CommandRouter", "build_handler_args", "get_di_params"]

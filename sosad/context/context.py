@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Self
 
 import hikari
@@ -19,16 +19,15 @@ _MISSING = object()
 class ResponseBuilder:
     """Immutable builder for interaction responses. Each method returns a new builder."""
 
-    _interaction: hikari.CommandInteraction
-    _response_type: hikari.ResponseType = field(default=hikari.ResponseType.MESSAGE_CREATE)
+    _interaction: hikari.CommandInteraction | hikari.ComponentInteraction | hikari.ModalInteraction
+    _response_type: hikari.ResponseType = hikari.ResponseType.MESSAGE_CREATE
     _content: str | None = None
     _embeds: tuple[hikari.Embed, ...] = ()
     _files: tuple[hikari.File, ...] = ()
-    _flags: hikari.MessageFlag = field(default=hikari.MessageFlag.NONE)
+    _flags: hikari.MessageFlag = hikari.MessageFlag.NONE
     _components: tuple[Any, ...] = ()
 
     def content(self, text: str) -> Self:
-        """Set the message content."""
         return self.__class__(
             _interaction=self._interaction,
             _response_type=self._response_type,
@@ -40,7 +39,6 @@ class ResponseBuilder:
         )
 
     def embed(self, embed: hikari.Embed) -> Self:
-        """Add a single embed."""
         return self.__class__(
             _interaction=self._interaction,
             _response_type=self._response_type,
@@ -52,7 +50,6 @@ class ResponseBuilder:
         )
 
     def embeds(self, *embeds: hikari.Embed) -> Self:
-        """Add multiple embeds."""
         return self.__class__(
             _interaction=self._interaction,
             _response_type=self._response_type,
@@ -64,7 +61,6 @@ class ResponseBuilder:
         )
 
     def file(self, file: hikari.File) -> Self:
-        """Add a file attachment."""
         return self.__class__(
             _interaction=self._interaction,
             _response_type=self._response_type,
@@ -76,7 +72,6 @@ class ResponseBuilder:
         )
 
     def files(self, *files: hikari.File) -> Self:
-        """Add multiple file attachments."""
         return self.__class__(
             _interaction=self._interaction,
             _response_type=self._response_type,
@@ -88,7 +83,6 @@ class ResponseBuilder:
         )
 
     def ephemeral(self) -> Self:
-        """Make the response ephemeral (only visible to the invoker)."""
         return self.__class__(
             _interaction=self._interaction,
             _response_type=self._response_type,
@@ -100,7 +94,6 @@ class ResponseBuilder:
         )
 
     def flag(self, flag: hikari.MessageFlag) -> Self:
-        """Add a message flag."""
         return self.__class__(
             _interaction=self._interaction,
             _response_type=self._response_type,
@@ -112,7 +105,6 @@ class ResponseBuilder:
         )
 
     async def send(self) -> hikari.MessageResponse[hikari.CommandInteraction]:
-        """Execute the response."""
         builder = self._interaction.build_response(self._response_type)
         if self._content is not None:
             builder = builder.set_content(self._content)
@@ -125,7 +117,6 @@ class ResponseBuilder:
         return await builder.create_initial_response()
 
     async def defer(self, *, ephemeral: bool = False) -> None:
-        """Defer the interaction response."""
         flags = hikari.MessageFlag.EPHEMERAL if ephemeral else hikari.MessageFlag.NONE
         await self._interaction.create_initial_response(
             hikari.ResponseType.DEFERRED_MESSAGE_CREATE,
@@ -143,26 +134,21 @@ class InteractionContext:
 
     @property
     def author(self) -> hikari.User:
-        """The user who invoked the command."""
         return self.interaction.user
 
     @property
     def guild_id(self) -> hikari.Snowflake | None:
-        """Guild ID if in a guild, else None."""
         return self.interaction.guild_id
 
     @property
     def channel_id(self) -> hikari.Snowflake:
-        """The channel ID where the command was invoked."""
         return self.interaction.channel_id
 
     @property
     def options(self) -> dict[str, hikari.CommandInteractionOption]:
-        """All options as a name-to-option dict."""
         return {opt.name: opt for opt in (self.interaction.options or ())}
 
     def get_option(self, name: str, default: Any = _MISSING) -> Any:
-        """Get an option value by name. Returns default if not found."""
         opts = self.options
         if name not in opts:
             if default is _MISSING:
@@ -171,21 +157,18 @@ class InteractionContext:
         return opts[name].value
 
     def get_str(self, name: str) -> str:
-        """Get a string option value."""
         value = self.get_option(name)
         if not isinstance(value, str):
-            raise TypeError(f"Option '{name}' is not a string, got {type(value)}")
+            raise TypeError(f"Option '{name}' is not a string")
         return value
 
     def get_int(self, name: str) -> int:
-        """Get an integer option value."""
         value = self.get_option(name)
         if not isinstance(value, int):
-            raise TypeError(f"Option '{name}' is not an int, got {type(value)}")
+            raise TypeError(f"Option '{name}' is not an int")
         return value
 
     def get_user(self, name: str) -> hikari.User:
-        """Get a user option value."""
         opt = self.options.get(name)
         if opt is None:
             raise KeyError(f"Option '{name}' not found")
@@ -197,19 +180,44 @@ class InteractionContext:
             raise TypeError(f"Option '{name}' is not a user snowflake")
         user = resolved.members.get(user_id) or resolved.users.get(user_id)
         if user is None:
-            raise ValueError(f"User {user_id} not found in resolved data")
+            raise ValueError(f"User {user_id} not found")
         return user
 
-    def respond(self) -> ResponseBuilder:
-        """Create a response builder for this interaction."""
-        return ResponseBuilder(interaction=self.interaction)
+    # ── Shortcut respond: ctx.respond("Pong!") ──
+
+    def respond(
+        self,
+        content: str | None = None,
+        *,
+        ephemeral: bool = False,
+    ) -> ResponseBuilder:
+        """Create a response. Supports both shortcut and builder patterns.
+
+        Shortcut::
+
+            await ctx.respond("Pong!")
+
+        Builder::
+
+            await (
+                ctx.respond()
+                .content("Done")
+                .ephemeral()
+                .embed(embed)
+                .send()
+            )
+        """
+        builder = ResponseBuilder(interaction=self.interaction)
+        if content is not None:
+            builder = builder.content(content)
+        if ephemeral:
+            builder = builder.ephemeral()
+        return builder
 
     async def edit_response(self, **kwargs: Any) -> hikari.Message:
-        """Edit the initial response."""
         return await self.interaction.edit_initial_response(**kwargs)
 
     async def defer(self, *, ephemeral: bool = False) -> None:
-        """Defer the interaction response."""
         flags = hikari.MessageFlag.EPHEMERAL if ephemeral else hikari.MessageFlag.NONE
         await self.interaction.create_initial_response(
             hikari.ResponseType.DEFERRED_MESSAGE_CREATE,

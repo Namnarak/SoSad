@@ -19,11 +19,13 @@ from sosad.checks import (
 )
 from sosad.commands import CommandRegistry, command_group, slash_command, sub_command
 from sosad.commands.executor import execute_command
-from sosad.components import button, modal, select
 from sosad.components.base import ComponentContext
+from sosad.components.modal import Modal, TextInputBuilder
+from sosad.components.view import ButtonBuilder, SelectBuilder, View
 from sosad.context import InteractionContext, ResponseBuilder
 from sosad.cooldowns import BucketScope, CooldownConfig, cooldown
 from sosad.core import App, Client
+from sosad.core.settings import Settings
 from sosad.di import Container, ScopeManager, inject
 from sosad.errors import (
     CheckFailed,
@@ -42,10 +44,15 @@ from sosad.tasks import TaskMeta, TaskScheduler, loop, task
 
 __version__ = __version__
 
+# Aliases
+app = Client
+
 __all__ = [
     # Core
     "App",
     "Client",
+    "app",
+    "Settings",
     # Context
     "InteractionContext",
     "ResponseBuilder",
@@ -55,10 +62,12 @@ __all__ = [
     "sub_command",
     "command_group",
     "execute_command",
-    # Components
-    "button",
-    "select",
-    "modal",
+    # Components (View/Builder)
+    "View",
+    "Modal",
+    "ButtonBuilder",
+    "SelectBuilder",
+    "TextInputBuilder",
     "ComponentContext",
     # Events
     "EventDispatcher",
@@ -106,7 +115,7 @@ __all__ = [
     "loop",
     # API
     "RESTClient",
-    # Re-export hikari for convenience
+    # Re-export hikari
     "hikari",
     # Version
     "__version__",
