@@ -34,7 +34,7 @@ def has_permissions(*perms: hikari.Permissions) -> CheckFunc:
     async def _check(ctx: InteractionContext) -> CheckResult:
         if ctx.guild_id is None:
             return CheckResult.fail("This command can only be used in a guild.")
-        member = ctx.interaction.get_member()
+        member = ctx.interaction.member
         if member is None:
             return CheckResult.fail("Could not resolve member.")
         if member.permissions & perms[0] == perms[0]:
@@ -50,7 +50,7 @@ def has_role(*role_ids: hikari.Snowflake) -> CheckFunc:
     async def _check(ctx: InteractionContext) -> CheckResult:
         if ctx.guild_id is None:
             return CheckResult.fail("This command can only be used in a guild.")
-        member = ctx.interaction.get_member()
+        member = ctx.interaction.member
         if member is None:
             return CheckResult.fail("Could not resolve member.")
         member_roles = set(member.role_ids)
@@ -94,8 +94,12 @@ def bot_has_permissions(*perms: hikari.Permissions) -> CheckFunc:
     async def _check(ctx: InteractionContext) -> CheckResult:
         if ctx.guild_id is None:
             return CheckResult.fail("This command can only be used in a guild.")
-        me = ctx.client.bot.get_my_member(ctx.guild_id)
-        if me is None:
+        try:
+            bot_user = ctx.client.bot.get_me()
+            if bot_user is None:
+                return CheckResult.fail("Could not resolve bot user.")
+            me = await ctx.client.bot.rest.fetch_member(ctx.guild_id, bot_user.id)
+        except Exception:
             return CheckResult.fail("Could not resolve bot member.")
         if me.permissions & perms[0] == perms[0]:
             return CheckResult.ok()

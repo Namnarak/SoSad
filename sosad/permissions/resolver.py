@@ -13,7 +13,7 @@ class PermissionResolver:
         interaction: hikari.CommandInteraction,
     ) -> hikari.Permissions:
         """Get the member's effective permissions in the channel."""
-        member = interaction.get_member()
+        member = interaction.member
         if member is None:
             return hikari.Permissions.NONE
         return member.permissions

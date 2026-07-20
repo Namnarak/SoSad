@@ -70,7 +70,7 @@ class Client(BaseClient):
         return self._bot
 
     @property
-    def rest(self) -> hikari.api.RESTProvider:
+    def rest(self) -> hikari.api.RESTClient:
         return self.bot.rest
 
     @property
@@ -81,9 +81,6 @@ class Client(BaseClient):
     @property
     def shard_ids(self) -> list[int]:
         """IDs of shards this bot owns."""
-        shard = getattr(self._bot, "shard", None)
-        if shard is not None:
-            return [shard.id]
         return [0]
 
     @property

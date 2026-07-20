@@ -93,8 +93,8 @@ class CommandRegistry:
             if meta.is_dm_only:
                 cmd["integration_types"] = [hikari.ApplicationIntegrationType.USER_INSTALL]
                 cmd["contexts"] = [
-                    hikari.InteractionContextType.BOT_DM,
-                    hikari.InteractionContextType.PRIVATE_CHANNEL,
+                    hikari.ApplicationContextType.BOT_DM,
+                    hikari.ApplicationContextType.PRIVATE_CHANNEL,
                 ]
             options: list[dict[str, Any]] = []
             for opt in meta.options:

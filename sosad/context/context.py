@@ -14,6 +14,82 @@ if TYPE_CHECKING:
 
 _MISSING = object()
 
+
+def _resolve_components(components: tuple[Any, ...]) -> list[Any]:
+    """Convert sosad View objects in components to hikari ComponentBuilder objects."""
+    from hikari.impl import MessageActionRowBuilder
+
+    resolved: list[Any] = []
+    for comp in components:
+        if hasattr(comp, "build_rows"):
+            rows_data = comp.build_rows()
+            for row_dicts in rows_data:
+                row = MessageActionRowBuilder()
+                for cd in row_dicts:
+                    _add_to_row(row, cd)
+                resolved.append(row)
+        else:
+            resolved.append(comp)
+    return resolved
+
+
+def _add_to_row(row: Any, cd: dict[str, Any]) -> None:
+    ctype = cd.get("type")
+    if ctype == 2:
+        url = cd.get("url")
+        if url:
+            row.add_link_button(url=url, label=cd.get("label"), emoji=cd.get("emoji"))
+        else:
+            row.add_interactive_button(
+                style=cd["style"],
+                custom_id=cd.get("custom_id", ""),
+                label=cd.get("label"),
+                emoji=cd.get("emoji"),
+                is_disabled=cd.get("disabled", False),
+            )
+    elif ctype == 3:
+        menu = row.add_text_menu(
+            custom_id=cd.get("custom_id", ""),
+            placeholder=cd.get("placeholder"),
+            min_values=cd.get("min_values", 0),
+            max_values=cd.get("max_values", 1),
+            is_disabled=cd.get("disabled", False),
+        )
+        for opt in cd.get("options", []):
+            menu.add_option(
+                label=opt["label"],
+                value=opt["value"],
+                description=opt.get("description"),
+                emoji=opt.get("emoji"),
+                is_default=opt.get("default", False),
+            )
+
+
+def _build_modal_rows(components_data: list[dict[str, Any]]) -> list[Any]:
+    """Convert modal component data dicts to hikari ModalActionRowBuilder objects."""
+    from hikari.impl import ModalActionRowBuilder
+
+    rows: list[Any] = []
+    for item in components_data:
+        if item.get("type") != 1:
+            continue
+        row = ModalActionRowBuilder()
+        for child in item.get("components", []):
+            if child.get("type") == 4:
+                row.add_text_input(
+                    custom_id=child.get("custom_id", ""),
+                    label=child.get("label", ""),
+                    style=child.get("style", 1),
+                    placeholder=child.get("placeholder"),
+                    value=child.get("value"),
+                    required=child.get("required", True),
+                    min_length=child.get("min_length", 0),
+                    max_length=child.get("max_length", 4000),
+                )
+        rows.append(row)
+    return rows
+
+
 InteractionT = (
     hikari.CommandInteraction
     | hikari.ComponentInteraction
@@ -153,10 +229,11 @@ class ResponseBuilder:
     async def send(self) -> Any:
         if self._modal is not None:
             data = self._modal.build()
+            rows = _build_modal_rows(data["components"])
             return await self._interaction.create_modal_response(
                 data["title"],
                 data["custom_id"],
-                components=data["components"],
+                components=rows,
             )
         kwargs: dict[str, Any] = {}
         if self._content is not None:
@@ -166,7 +243,7 @@ class ResponseBuilder:
         if self._files:
             kwargs["attachments"] = self._files
         if self._components:
-            kwargs["components"] = self._components
+            kwargs["components"] = _resolve_components(self._components)
         if self._flags is not hikari.MessageFlag.NONE:
             kwargs["flags"] = self._flags
         return await self._interaction.create_initial_response(

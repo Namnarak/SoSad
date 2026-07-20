@@ -276,7 +276,7 @@ class CommandRouter:
     ) -> None:
         """Route an autocomplete interaction."""
         logger.warning("Autocomplete not yet implemented for: %s", interaction.command_name)
-        await interaction.create_initial_response([])
+        await interaction.create_response([])
 
 
 __all__ = [

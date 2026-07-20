@@ -46,13 +46,7 @@ class PrefixContext:
         embeds: list[hikari.Embed] | None = None,
         **kwargs: Any,
     ) -> hikari.Message:
-        builder = self.message.respond(content)
-        if embed:
-            builder = builder.add_embed(embed)
-        if embeds:
-            for e in embeds:
-                builder = builder.add_embed(e)
-        return await builder
+        return await self.message.respond(content, embed=embed, embeds=embeds, **kwargs)
 
     async def reply(
         self,

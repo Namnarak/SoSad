@@ -34,7 +34,7 @@ class CommandSyncer:
 
     def __init__(
         self,
-        rest: hikari.api.RESTProvider,
+        rest: hikari.api.RESTClient,
         registry: CommandRegistry,
         app_id: hikari.Snowflake,
     ) -> None:
@@ -52,15 +52,21 @@ class CommandSyncer:
             for opt in cmd["options"]:
                 option_type = hikari.OptionType(opt["type"])
                 if option_type == hikari.OptionType.SUB_COMMAND:
-                    sub = builder.sub_option(opt["name"], opt["description"])
+                    sub_options: list[Any] = []
                     if "options" in opt:
                         for sub_opt in opt["options"]:
-                            sub.add_option(hikari.CommandOption(
+                            sub_options.append(hikari.CommandOption(
                                 type=hikari.OptionType(sub_opt["type"]),
                                 name=sub_opt["name"],
                                 description=sub_opt["description"],
                                 is_required=sub_opt.get("required", False),
                             ))
+                    builder.add_option(hikari.CommandOption(
+                        type=hikari.OptionType.SUB_COMMAND,
+                        name=opt["name"],
+                        description=opt["description"],
+                        options=sub_options or None,
+                    ))
                 else:
                     builder.add_option(hikari.CommandOption(
                         type=option_type,

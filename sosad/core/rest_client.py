@@ -65,6 +65,7 @@ class RESTClient(BaseClient):
         self._server_mode = server
         self._bot: hikari.RESTBot | None = None
         self._custom_server: Any = None
+        self._custom_rest: Any = None
 
     @property
     def is_rest(self) -> bool:
@@ -75,11 +76,11 @@ class RESTClient(BaseClient):
         return self._bot
 
     @property
-    def rest(self) -> hikari.api.RESTProvider:
+    def rest(self) -> hikari.api.RESTClient:
         if self._bot is not None:
             return self._bot.rest
-        if self._custom_server is not None:
-            return self._custom_server._rest_client
+        if self._custom_rest is not None:
+            return self._custom_rest
         raise RuntimeError("RESTClient has not been started yet")
 
     def run(
@@ -221,7 +222,7 @@ class RESTClient(BaseClient):
             rest_client = hikari.impl.RESTClientImpl(
                 token=self._token,
                 entity_factory=hikari.impl.entity_factory.EntityFactoryImpl(
-                    rest_client=None,
+                    app=None,
                 ),
                 executor=None,
                 http_settings=hikari.impl.config.HTTPSettings(),
@@ -230,8 +231,10 @@ class RESTClient(BaseClient):
             )
 
             entity_factory = hikari.impl.entity_factory.EntityFactoryImpl(
-                rest_client=rest_client,
+                app=rest_client,
             )
+
+            self._custom_rest = rest_client
 
             server = hikari.impl.interaction_server.InteractionServer(
                 entity_factory=entity_factory,
