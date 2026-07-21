@@ -38,6 +38,13 @@ def _extract_options(
     descriptions: dict[str, str] | None = None,
 ) -> tuple[OptionDescriptor, ...]:
     """Extract option descriptors from a function's signature."""
+    import typing
+
+    try:
+        hints = typing.get_type_hints(func)
+    except Exception:
+        hints = {}
+
     sig = inspect.signature(func)
     options: list[OptionDescriptor] = []
     descriptions = descriptions or {}
@@ -45,7 +52,8 @@ def _extract_options(
     for name, param in sig.parameters.items():
         if name in _SKIP_NAMES:
             continue
-        if param.annotation is inspect.Parameter.empty:
+        ann = hints.get(name, param.annotation)
+        if ann is inspect.Parameter.empty:
             continue
 
         from sosad.di.markers import _InjectMarker
@@ -53,7 +61,7 @@ def _extract_options(
         if isinstance(param.default, _InjectMarker):
             continue
 
-        option_type = _TYPE_MAP.get(param.annotation)
+        option_type = _TYPE_MAP.get(ann)
         if option_type is None:
             continue
 

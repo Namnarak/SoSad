@@ -351,7 +351,7 @@ class InteractionContext:
                 .send()
             )
         """
-        builder = ResponseBuilder(interaction=self.interaction)
+        builder = ResponseBuilder(_interaction=self.interaction)
         if content is not None:
             builder = builder.content(content)
         if ephemeral:

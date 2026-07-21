@@ -90,6 +90,16 @@ def _resolve_value(
     return value
 
 
+def _resolve_annotations(
+    handler: Any,
+) -> dict[str, type]:
+    import typing
+    try:
+        return typing.get_type_hints(handler)
+    except Exception:
+        return {}
+
+
 def build_handler_args(
     ctx: InteractionContext,
     interaction: hikari.CommandInteraction,
@@ -98,13 +108,15 @@ def build_handler_args(
 ) -> dict[str, Any]:
     option_values = _extract_option_values(interaction, handler)
     kwargs: dict[str, Any] = {}
+    hints = _resolve_annotations(handler)
 
     sig = inspect.signature(handler)
     for name, param in sig.parameters.items():
         if name == "ctx":
             kwargs["ctx"] = ctx
             continue
-        if param.annotation in _FRAMEWORK_TYPES:
+        ann = hints.get(name, param.annotation)
+        if ann in _FRAMEWORK_TYPES:
             kwargs["ctx"] = ctx
             continue
 
@@ -116,6 +128,7 @@ def build_handler_args(
 
 
 def get_di_params(handler: Any) -> dict[str, inspect.Parameter]:
+    hints = _resolve_annotations(handler)
     sig = inspect.signature(handler)
     di_params: dict[str, inspect.Parameter] = {}
     for name, param in sig.parameters.items():
@@ -123,9 +136,10 @@ def get_di_params(handler: Any) -> dict[str, inspect.Parameter]:
             continue
         if param.annotation is inspect.Parameter.empty:
             continue
-        if param.annotation in _FRAMEWORK_TYPES:
+        ann = hints.get(name, param.annotation)
+        if ann in _FRAMEWORK_TYPES:
             continue
-        if param.annotation in _PRIMITIVE_TYPES:
+        if ann in _PRIMITIVE_TYPES:
             continue
         di_params[name] = param
     return di_params

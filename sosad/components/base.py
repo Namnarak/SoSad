@@ -46,7 +46,7 @@ class ComponentContext:
 
     def respond(self) -> Any:
         from sosad.context.context import ResponseBuilder
-        return ResponseBuilder(interaction=self.interaction)
+        return ResponseBuilder(_interaction=self.interaction)
 
 
 @runtime_checkable

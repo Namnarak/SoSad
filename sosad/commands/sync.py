@@ -48,6 +48,10 @@ class CommandSyncer:
             cmd["name"],
             cmd["description"],
         )
+        if "default_member_permissions" in cmd:
+            builder.set_default_member_permissions(int(cmd["default_member_permissions"]))
+        if cmd.get("nsfw"):
+            builder.set_nsfw(True)
         if "options" in cmd:
             for opt in cmd["options"]:
                 option_type = hikari.OptionType(opt["type"])
