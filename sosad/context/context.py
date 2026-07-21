@@ -38,29 +38,45 @@ def _add_to_row(row: Any, cd: dict[str, Any]) -> None:
     if ctype == 2:
         url = cd.get("url")
         if url:
-            row.add_link_button(url, label=cd.get("label"), emoji=cd.get("emoji"))
+            kwargs: dict[str, Any] = {}
+            if cd.get("label") is not None:
+                kwargs["label"] = cd["label"]
+            if cd.get("emoji") is not None:
+                kwargs["emoji"] = cd["emoji"]
+            row.add_link_button(url, **kwargs)
         else:
+            kwargs = {}
+            if cd.get("label") is not None:
+                kwargs["label"] = cd["label"]
+            if cd.get("emoji") is not None:
+                kwargs["emoji"] = cd["emoji"]
             row.add_interactive_button(
                 cd["style"],
                 cd.get("custom_id", ""),
-                label=cd.get("label"),
-                emoji=cd.get("emoji"),
+                **kwargs,
                 is_disabled=cd.get("disabled", False),
             )
     elif ctype == 3:
+        menu_kwargs: dict[str, Any] = {}
+        if cd.get("placeholder") is not None:
+            menu_kwargs["placeholder"] = cd["placeholder"]
         menu = row.add_text_menu(
             cd.get("custom_id", ""),
-            placeholder=cd.get("placeholder"),
+            **menu_kwargs,
             min_values=cd.get("min_values", 0),
             max_values=cd.get("max_values", 1),
             is_disabled=cd.get("disabled", False),
         )
         for opt in cd.get("options", []):
+            opt_kwargs: dict[str, Any] = {}
+            if opt.get("description") is not None:
+                opt_kwargs["description"] = opt["description"]
+            if opt.get("emoji") is not None:
+                opt_kwargs["emoji"] = opt["emoji"]
             menu.add_option(
                 opt["label"],
                 opt["value"],
-                description=opt.get("description"),
-                emoji=opt.get("emoji"),
+                **opt_kwargs,
                 is_default=opt.get("default", False),
             )
 
@@ -76,12 +92,16 @@ def _build_modal_rows(components_data: list[dict[str, Any]]) -> list[Any]:
         row = ModalActionRowBuilder()
         for child in item.get("components", []):
             if child.get("type") == 4:
+                kwargs: dict[str, Any] = {}
+                if child.get("placeholder") is not None:
+                    kwargs["placeholder"] = child["placeholder"]
+                if child.get("value") is not None:
+                    kwargs["value"] = child["value"]
                 row.add_text_input(
-                    custom_id=child.get("custom_id", ""),
-                    label=child.get("label", ""),
+                    child.get("custom_id", ""),
+                    child.get("label", ""),
                     style=child.get("style", 1),
-                    placeholder=child.get("placeholder"),
-                    value=child.get("value"),
+                    **kwargs,
                     required=child.get("required", True),
                     min_length=child.get("min_length", 0),
                     max_length=child.get("max_length", 4000),
