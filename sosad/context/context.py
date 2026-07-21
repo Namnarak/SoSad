@@ -38,18 +38,18 @@ def _add_to_row(row: Any, cd: dict[str, Any]) -> None:
     if ctype == 2:
         url = cd.get("url")
         if url:
-            row.add_link_button(url=url, label=cd.get("label"), emoji=cd.get("emoji"))
+            row.add_link_button(url, label=cd.get("label"), emoji=cd.get("emoji"))
         else:
             row.add_interactive_button(
-                style=cd["style"],
-                custom_id=cd.get("custom_id", ""),
+                cd["style"],
+                cd.get("custom_id", ""),
                 label=cd.get("label"),
                 emoji=cd.get("emoji"),
                 is_disabled=cd.get("disabled", False),
             )
     elif ctype == 3:
         menu = row.add_text_menu(
-            custom_id=cd.get("custom_id", ""),
+            cd.get("custom_id", ""),
             placeholder=cd.get("placeholder"),
             min_values=cd.get("min_values", 0),
             max_values=cd.get("max_values", 1),
@@ -57,8 +57,8 @@ def _add_to_row(row: Any, cd: dict[str, Any]) -> None:
         )
         for opt in cd.get("options", []):
             menu.add_option(
-                label=opt["label"],
-                value=opt["value"],
+                opt["label"],
+                opt["value"],
                 description=opt.get("description"),
                 emoji=opt.get("emoji"),
                 is_default=opt.get("default", False),
