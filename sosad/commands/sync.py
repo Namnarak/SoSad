@@ -51,7 +51,11 @@ class CommandSyncer:
         if "default_member_permissions" in cmd:
             builder.set_default_member_permissions(int(cmd["default_member_permissions"]))
         if cmd.get("nsfw"):
-            builder.set_nsfw(True)
+            builder.set_is_nsfw(True)
+        if "contexts" in cmd:
+            builder.set_context_types(cmd["contexts"])
+        if "integration_types" in cmd:
+            builder.set_integration_types(cmd["integration_types"])
         if "options" in cmd:
             for opt in cmd["options"]:
                 option_type = hikari.OptionType(opt["type"])
@@ -59,12 +63,20 @@ class CommandSyncer:
                     sub_options: list[Any] = []
                     if "options" in opt:
                         for sub_opt in opt["options"]:
-                            sub_options.append(hikari.CommandOption(
-                                type=hikari.OptionType(sub_opt["type"]),
-                                name=sub_opt["name"],
-                                description=sub_opt["description"],
-                                is_required=sub_opt.get("required", False),
-                            ))
+                            choices = [
+                                hikari.CommandChoice(**choice)
+                                for choice in sub_opt.get("choices", [])
+                            ]
+                            sub_options.append(
+                                hikari.CommandOption(
+                                    type=hikari.OptionType(sub_opt["type"]),
+                                    name=sub_opt["name"],
+                                    description=sub_opt["description"],
+                                    is_required=sub_opt.get("required", False),
+                                    choices=choices or None,
+                                    autocomplete=sub_opt.get("autocomplete", False),
+                                )
+                            )
                     builder.add_option(hikari.CommandOption(
                         type=hikari.OptionType.SUB_COMMAND,
                         name=opt["name"],
@@ -72,18 +84,26 @@ class CommandSyncer:
                         options=sub_options or None,
                     ))
                 else:
-                    builder.add_option(hikari.CommandOption(
-                        type=option_type,
-                        name=opt["name"],
-                        description=opt["description"],
-                        is_required=opt.get("required", False),
-                    ))
+                    choices = [
+                        hikari.CommandChoice(**choice)
+                        for choice in opt.get("choices", [])
+                    ]
+                    builder.add_option(
+                        hikari.CommandOption(
+                            type=option_type,
+                            name=opt["name"],
+                            description=opt["description"],
+                            is_required=opt.get("required", False),
+                            choices=choices or None,
+                            autocomplete=opt.get("autocomplete", False),
+                        )
+                    )
         return builder
 
     async def sync(self) -> SyncResult:
         """Sync global commands to Discord (may take ~1 hour to propagate)."""
         result = SyncResult()
-        cmd_dicts = self._registry.build_hikari_commands()
+        cmd_dicts = self._registry.build_hikari_commands("global")
         logger.info("Building %d command builders...", len(cmd_dicts))
         builders = [self._build_command(cmd) for cmd in cmd_dicts]
 
@@ -104,7 +124,7 @@ class CommandSyncer:
     async def sync_guild(self, guild_id: hikari.Snowflake) -> SyncResult:
         """Sync commands to a specific guild (instant, no propagation delay)."""
         result = SyncResult()
-        cmd_dicts = self._registry.build_hikari_commands()
+        cmd_dicts = self._registry.build_hikari_commands(guild_id)
         logger.info("Building %d guild command builders...", len(cmd_dicts))
         builders = [self._build_command(cmd) for cmd in cmd_dicts]
 

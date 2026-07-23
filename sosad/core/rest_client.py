@@ -52,6 +52,7 @@ class RESTClient(BaseClient):
         logs: str | int = "INFO",
         banner: str = "so sad",
         auto_discover_plugins: bool = True,
+        sync_commands: bool = True,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -66,6 +67,7 @@ class RESTClient(BaseClient):
         self._bot: hikari.RESTBot | None = None
         self._custom_server: Any = None
         self._custom_rest: Any = None
+        self._sync_commands = sync_commands
 
     @property
     def is_rest(self) -> bool:
@@ -111,9 +113,9 @@ class RESTClient(BaseClient):
         ssl_context : ssl.SSLContext, optional
             SSL context for HTTPS. Required for production Discord integration.
         """
-        self._init_registry_and_router()
-        self._load_pending_plugins()
         self._auto_discover_plugins()
+        self._load_pending_plugins()
+        self._init_registry_and_router()
         self._start_tasks()
 
         if self._server_mode == "custom":
@@ -180,6 +182,8 @@ class RESTClient(BaseClient):
                 hikari.AutocompleteInteraction,
                 self._handle_hikari_autocomplete,
             )
+        if self._sync_commands:
+            self._bot.add_startup_callback(self._sync_all_commands)
 
         cmd_count = self._registry.command_count if self._registry else 0
         logger.info("SoSad v%s (REST/hikari) starting with %d commands...", __version__, cmd_count)
@@ -285,6 +289,22 @@ class RESTClient(BaseClient):
             return web.Response(text="SoSad REST Bot is running.")
 
         app = web.Application()
+
+        async def on_startup(_: web.Application) -> None:
+            rest_client.start()
+            if self._sync_commands and self._registry is not None:
+                from sosad.commands.sync import CommandSyncer
+
+                me = await rest_client.fetch_my_user()
+                result = await CommandSyncer(rest_client, self._registry, me.id).sync()
+                for error in result.errors:
+                    logger.error(error)
+
+        async def on_cleanup(_: web.Application) -> None:
+            rest_client.close()
+
+        app.on_startup.append(on_startup)
+        app.on_cleanup.append(on_cleanup)
         app.router.add_post(path, handle_post)
         app.router.add_get("/", handle_get)
 
@@ -312,6 +332,17 @@ class RESTClient(BaseClient):
             return
         await self._router.handle_interaction_event(interaction)
         return None
+
+    async def _sync_all_commands(self, bot: hikari.RESTBot) -> None:
+        """Synchronize scoped global commands once the REST client is open."""
+        if self._registry is None:
+            return
+        from sosad.commands.sync import CommandSyncer
+
+        me = await bot.rest.fetch_my_user()
+        result = await CommandSyncer(bot.rest, self._registry, me.id).sync()
+        for error in result.errors:
+            logger.error(error)
 
     async def _handle_hikari_component(
         self,

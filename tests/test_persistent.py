@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock
-
 import hikari
 import pytest
 
@@ -95,7 +93,7 @@ class TestPersistentView:
             async def on_timeout(self):
                 calls.append("timeout")
 
-        view = TestView(timeout=0.01)
+        _ = TestView(timeout=0.01)
         import time
         time.sleep(0.02)
         PersistentView.cleanup_expired()
@@ -127,6 +125,10 @@ class TestPersistentView:
 
 
 class TestPaginator:
+    def test_empty_pages_are_rejected(self):
+        with pytest.raises(ValueError, match="at least one page"):
+            Paginator(pages=[])
+
     def test_create(self):
         pages = [{"page": 1}, {"page": 2}]
         paginator = Paginator(pages=pages)

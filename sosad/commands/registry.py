@@ -78,11 +78,13 @@ class CommandRegistry:
 
         return None
 
-    def build_hikari_commands(self) -> list[Any]:
+    def build_hikari_commands(self, scope: hikari.Snowflake | str = "global") -> list[Any]:
         """Convert internal metadata to Hikari command dicts for API sync."""
         builders: list[dict[str, Any]] = []
 
         for meta in self._commands.values():
+            if scope not in meta.scopes:
+                continue
             cmd: dict[str, Any] = {
                 "name": meta.name,
                 "description": meta.description,
@@ -96,6 +98,8 @@ class CommandRegistry:
                     hikari.ApplicationContextType.BOT_DM,
                     hikari.ApplicationContextType.PRIVATE_CHANNEL,
                 ]
+            elif meta.is_guild_only:
+                cmd["contexts"] = [hikari.ApplicationContextType.GUILD]
             options: list[dict[str, Any]] = []
             for opt in meta.options:
                 opt_data: dict[str, Any] = {
@@ -108,12 +112,16 @@ class CommandRegistry:
                     opt_data["choices"] = [
                         {"name": c[0], "value": c[1]} for c in opt.choices
                     ]
+                if opt.autocomplete:
+                    opt_data["autocomplete"] = True
                 options.append(opt_data)
             if options:
                 cmd["options"] = options
             builders.append(cmd)
 
         for group_name, group_meta in self._groups.items():
+            if scope not in group_meta.scopes:
+                continue
             cmd = {
                 "name": group_name,
                 "description": group_meta.description,
@@ -135,6 +143,12 @@ class CommandRegistry:
                         "description": opt.description,
                         "required": opt.required,
                     }
+                    if opt.choices:
+                        opt_data["choices"] = [
+                            {"name": c[0], "value": c[1]} for c in opt.choices
+                        ]
+                    if opt.autocomplete:
+                        opt_data["autocomplete"] = True
                     sub_data["options"].append(opt_data)
                 sub_options.append(sub_data)
             if sub_options:

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import hikari
 import pytest
@@ -220,7 +220,7 @@ class TestUtils:
     def test_utcnow(self):
         now = utcnow()
         assert isinstance(now, datetime)
-        assert now.tzinfo is timezone.utc
+        assert now.tzinfo is UTC
 
     def test_snowflake_time(self):
         # Snowflake for a known time
@@ -228,13 +228,13 @@ class TestUtils:
         assert isinstance(dt, datetime)
 
     def test_format_dt(self):
-        dt = datetime(2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+        dt = datetime(2025, 1, 1, 12, 0, 0, tzinfo=UTC)
         result = format_dt(dt)
         assert result.startswith("<t:")
         assert result.endswith(">")
 
     def test_format_dt_with_style(self):
-        dt = datetime(2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+        dt = datetime(2025, 1, 1, 12, 0, 0, tzinfo=UTC)
         result = format_dt(dt, style="R")
         assert "<t:" in result
         assert ":R>" in result

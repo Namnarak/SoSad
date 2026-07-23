@@ -148,6 +148,14 @@ class PersistentView:
                     result[cid] = handler
         return result
 
+    def to_storage_data(self) -> dict[str, Any]:
+        """Return the serializable state needed to restore the view layout."""
+        return {
+            "created_at": self.created_at,
+            "timeout": self.timeout,
+            "components": self.build_rows(),
+        }
+
     def _encode_id(self, custom_id: str) -> str:
         return f"{_VIEW_PREFIX}:{self.id}:{custom_id}"
 

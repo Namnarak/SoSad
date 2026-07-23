@@ -63,7 +63,6 @@ __all__ = [
     "VoiceChannel",
     "VoiceClient",
     "VoiceState",
-    "VoiceRegion",
     "app_commands",
     "get",
     "find",

@@ -11,6 +11,7 @@ import os
 import hikari
 
 import sosad
+from sosad.components import Paginator
 
 bot = sosad.Client(
     token=os.environ["TOKEN"],
@@ -85,9 +86,6 @@ async def on_feedback(ctx: sosad.ComponentContext) -> None:
 
 
 # ── Paginator example ─────────────────────────────────────
-from sosad.components import Paginator
-
-
 @Paginator.register("help_pages")
 class HelpPaginator(Paginator):
     def __init__(self) -> None:

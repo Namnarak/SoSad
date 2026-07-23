@@ -57,6 +57,8 @@ class Paginator(PersistentView):
         auto_wire: bool = True,
         page_range_size: int | None = None,
     ) -> None:
+        if not pages:
+            raise ValueError("Paginator requires at least one page")
         super().__init__(timeout=timeout)
         self.pages = pages
         self._current_page = 0

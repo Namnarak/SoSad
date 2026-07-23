@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import uuid
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
@@ -92,7 +93,7 @@ class Modal:
         on_submit: Callable[..., Any] | None = None,
     ) -> None:
         self._title = title
-        self._custom_id = custom_id
+        self._custom_id = custom_id or f"modal_{uuid.uuid4().hex}"
         self._inputs: list[TextInputBuilder] = []
         self._handler = on_submit
 
@@ -135,13 +136,13 @@ class Modal:
             })
         return {
             "title": self._title,
-            "custom_id": self._custom_id or f"modal_{id(self)}",
+            "custom_id": self._custom_id,
             "components": components,
         }
 
     @property
     def custom_id(self) -> str:
-        return self._custom_id or f"modal_{id(self)}"
+        return self._custom_id
 
     @property
     def handler(self) -> Callable[..., Any] | None:

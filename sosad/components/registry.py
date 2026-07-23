@@ -40,6 +40,10 @@ class ComponentRegistry:
     def add_modal(self, meta: ModalMeta) -> None:
         self._modals[meta.custom_id] = meta
 
+    def add_handler(self, custom_id: str, handler: Any) -> None:
+        """Register a dynamically-built button or select handler."""
+        self._buttons[custom_id] = ButtonMeta(custom_id=custom_id, handler=handler)
+
     def resolve_button(self, custom_id: str) -> ButtonMeta | None:
         return self._buttons.get(custom_id)
 
@@ -59,7 +63,7 @@ class ComponentRegistry:
             comp_id = parts[2]
             from sosad.components.persistent import PersistentView
             view = PersistentView.views.get(view_id)
-            if view is not None:
+            if view is not None and not view.is_expired():
                 return view._handlers.get(comp_id)
         return None
 
@@ -104,12 +108,8 @@ class ComponentRegistry:
         )
 
 
-# Global registry
-_registry = ComponentRegistry()
-
-
 def get_component_registry() -> ComponentRegistry:
-    return _registry
+    return ComponentRegistry.get_instance()
 
 
 __all__ = ["ComponentRegistry", "get_component_registry"]

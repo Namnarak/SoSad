@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import replace
 from typing import Any
 
-from sosad.commands.models import SlashCommandMeta
+from sosad.commands.models import SlashCommandMeta, SubCommandMeta
+from sosad.commands.registration import register_command
 from sosad.cooldowns.buckets import BucketScope, CooldownConfig
 
 
@@ -27,23 +29,17 @@ def cooldown(
     """
 
     def decorator(func: Any) -> Any:
-        _config = CooldownConfig(
+        config = CooldownConfig(
             rate=rate,
             period=period,
             bucket=bucket,
             retry_after_message=retry_after_message,
         )
-        if isinstance(func, SlashCommandMeta):
-            return SlashCommandMeta(
-                name=func.name,
-                description=func.description,
-                handler=func.handler,
-                options=func.options,
-                scopes=func.scopes,
-                default_member_permissions=func.default_member_permissions,
-                is_dm_only=func.is_dm_only,
-                nsfw=func.nsfw,
-            )
+        if isinstance(func, (SlashCommandMeta, SubCommandMeta)):
+            meta = replace(func, cooldown=config)
+            register_command(meta)
+            return meta
+        func.__sosad_cooldown__ = config
         return func
 
     return decorator

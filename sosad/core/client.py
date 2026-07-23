@@ -129,10 +129,10 @@ class Client(BaseClient):
             **self._hikari_kwargs,
         )
 
-        self._init_registry_and_router()
-        self._load_pending_plugins()
-        self._setup_listeners()
         self._auto_discover_plugins()
+        self._load_pending_plugins()
+        self._init_registry_and_router()
+        self._setup_listeners()
         self._attach_event_dispatcher()
         self._start_tasks()
 

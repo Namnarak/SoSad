@@ -36,7 +36,10 @@ def bench(name: str, runs: int, fn):
     lo = min(times)
     dev = stdev(times) if len(times) > 1 else 0
 
-    print(f"  {name:40s}  avg={avg:8.3f}ms  med={med:8.3f}ms  min={lo:8.3f}ms  max={hi:8.3f}ms  σ={dev:6.3f}ms")
+    print(
+        f"  {name:40s}  avg={avg:8.3f}ms  med={med:8.3f}ms  min={lo:8.3f}ms "
+        f"max={hi:8.3f}ms  σ={dev:6.3f}ms"
+    )
 
 
 def bench_command_registry():
@@ -129,8 +132,9 @@ def bench_paginator_creation():
 
 
 def bench_view_storage():
-    from sosad.components.storage import InMemoryViewStorage
     import asyncio
+
+    from sosad.components.storage import InMemoryViewStorage
 
     storage = InMemoryViewStorage()
 

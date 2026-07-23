@@ -186,6 +186,28 @@ def test_registry_compute_hash():
     assert len(h1) == 16
 
 
+def test_registry_builds_only_the_requested_scope():
+    registry = CommandRegistry()
+
+    async def handler(ctx): ...
+
+    registry.add(SlashCommandMeta(name="global", description="g", handler=handler))
+    registry.add(
+        SlashCommandMeta(
+            name="guild",
+            description="guild",
+            handler=handler,
+            scopes=(hikari.Snowflake(123),),
+        )
+    )
+
+    assert [command["name"] for command in registry.build_hikari_commands()] == ["global"]
+    assert [
+        command["name"]
+        for command in registry.build_hikari_commands(hikari.Snowflake(123))
+    ] == ["guild"]
+
+
 # ── Build Handler Args ──
 
 def test_build_handler_args_skips_ctx():

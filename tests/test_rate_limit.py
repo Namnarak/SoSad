@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import asyncio
 import time
+from dataclasses import FrozenInstanceError
 
 import pytest
 
@@ -29,7 +29,7 @@ class TestRateLimitBucket:
             route="test", limit=10, remaining=5,
             reset_after=1.0, reset_at=time.time() + 1.0,
         )
-        with pytest.raises(Exception):
+        with pytest.raises(FrozenInstanceError):
             bucket.remaining = 0  # frozen dataclass
 
     def test_equality(self):

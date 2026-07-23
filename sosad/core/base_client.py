@@ -56,6 +56,7 @@ class BaseClient:
         self._router: CommandRouter | None = None
         self._event_dispatcher = EventDispatcher()
         self._pending_plugins: list[Path] = []
+        self._plugin_manager: Any = None
         self._scheduler = TaskScheduler()
         self._started_tasks = False
 
@@ -96,13 +97,7 @@ class BaseClient:
         return decorator
 
     def load_plugins(self, *paths: str | Path) -> None:
-        from sosad.plugins.manager import PluginManager
-        manager = PluginManager(self)
-        try:
-            loop = asyncio.get_running_loop()
-            loop.create_task(manager.load_all(*paths))
-        except RuntimeError:
-            self._pending_plugins = list(paths)
+        self._pending_plugins.extend(Path(path) for path in paths)
 
     def _auto_discover_plugins(self) -> None:
         plugins_dir = Path("plugins")
@@ -113,11 +108,9 @@ class BaseClient:
     def _load_pending_plugins(self) -> None:
         if self._pending_plugins:
             from sosad.plugins.manager import PluginManager
-            manager = PluginManager(self)
-            import asyncio
-            loop = asyncio.get_event_loop()
-            for path in self._pending_plugins:
-                loop.create_task(manager.load_all(path))
+            self._plugin_manager = PluginManager(self)
+            asyncio.run(self._plugin_manager.load_all(*self._pending_plugins))
+            self._pending_plugins.clear()
 
     def _build_pipeline(self) -> HandlerFunc:
         stack = MiddlewareStack()

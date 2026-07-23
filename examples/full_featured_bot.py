@@ -6,9 +6,8 @@ Run:
 
 from __future__ import annotations
 
+import logging
 import os
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
 
 import hikari
 
@@ -17,6 +16,9 @@ from sosad.components import Paginator, PersistentView
 from sosad.components.storage import FileViewStorage, set_view_storage
 from sosad.di import Container
 from sosad.middleware import request_metrics
+
+logger = logging.getLogger(__name__)
+
 
 # ── Config ─────────────────────────────────────────────────
 class Config(sosad.Settings):
@@ -83,7 +85,7 @@ async def ping(ctx: sosad.InteractionContext) -> None:
 @sosad.slash_command("db", "Query database (uses DI)")
 async def db_query(
     ctx: sosad.InteractionContext,
-    db: Database = sosad.inject(Database),
+    db: Database = sosad.inject(Database),  # noqa: B008
 ) -> None:
     results = await db.query("SELECT 1")
     await ctx.respond(f"DB result: {results}")
@@ -112,12 +114,8 @@ async def cooldown_cmd(ctx: sosad.InteractionContext) -> None:
     await ctx.respond("This has a cooldown!")
 
 
-from sosad import guild_only
-
-
 @sosad.slash_command("admin", "Admin only")
-@guild_only
-@sosad.is_owner
+@sosad.check(sosad.guild_only(), sosad.is_owner())
 async def admin_only(ctx: sosad.InteractionContext) -> None:
     await ctx.respond("Welcome, owner!")
 

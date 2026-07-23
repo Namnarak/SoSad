@@ -111,6 +111,8 @@ def slash_command(
             is_dm_only=is_dm_only,
             is_guild_only=is_guild_only,
             nsfw=nsfw,
+            checks=tuple(getattr(func, "__sosad_checks__", ())),
+            cooldown=getattr(func, "__sosad_cooldown__", None),
         )
         register_command(meta)
         return meta
@@ -137,6 +139,8 @@ def sub_command(
             handler=func,
             options=options,
             parent_scopes=tuple(parent_scopes) if parent_scopes else None,
+            checks=tuple(getattr(func, "__sosad_checks__", ())),
+            cooldown=getattr(func, "__sosad_cooldown__", None),
         )
         register_command(meta)
         return meta

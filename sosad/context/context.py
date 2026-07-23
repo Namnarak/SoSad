@@ -249,6 +249,17 @@ class ResponseBuilder:
     async def send(self) -> Any:
         if self._modal is not None:
             data = self._modal.build()
+            if self._modal.handler is not None:
+                from sosad.components.base import ModalMeta
+                from sosad.components.registry import get_component_registry
+
+                get_component_registry().add_modal(
+                    ModalMeta(
+                        custom_id=data["custom_id"],
+                        handler=self._modal.handler,
+                        title=data["title"],
+                    )
+                )
             rows = _build_modal_rows(data["components"])
             return await self._interaction.create_modal_response(
                 data["title"],
@@ -263,6 +274,19 @@ class ResponseBuilder:
         if self._files:
             kwargs["attachments"] = self._files
         if self._components:
+            from sosad.components.registry import get_component_registry
+
+            registry = get_component_registry()
+            for component in self._components:
+                get_handlers = getattr(component, "get_handlers", None)
+                if get_handlers is not None:
+                    for custom_id, handler in get_handlers().items():
+                        registry.add_handler(custom_id, handler)
+                to_storage_data = getattr(component, "to_storage_data", None)
+                if to_storage_data is not None:
+                    from sosad.components.storage import get_view_storage
+
+                    await get_view_storage().save(component.id, to_storage_data())
             kwargs["components"] = _resolve_components(self._components)
         if self._flags is not hikari.MessageFlag.NONE:
             kwargs["flags"] = self._flags

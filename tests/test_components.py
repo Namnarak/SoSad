@@ -9,9 +9,10 @@ import pytest
 
 from sosad.components.base import ButtonMeta, ComponentContext, ModalMeta, SelectMeta
 from sosad.components.decorators import button, modal, select
-from sosad.components.registry import ComponentRegistry
-from sosad.components.view import View, ButtonBuilder, SelectBuilder
 from sosad.components.modal import TextInputBuilder
+from sosad.components.registry import ComponentRegistry
+from sosad.components.view import ButtonBuilder, SelectBuilder, View
+from sosad.context.context import ResponseBuilder
 
 
 class TestButtonDecorator:
@@ -117,6 +118,23 @@ class TestComponentRegistry:
         assert reg.remove("b") is True
         assert reg.remove("c") is False
         assert reg.count == 0
+
+    @pytest.mark.asyncio
+    async def test_response_registers_view_callback_in_router_registry(self):
+        view = View()
+
+        async def handler(ctx):
+            pass
+
+        view.button(custom_id="dynamic-test", label="Run").on_click(handler)
+        interaction = MagicMock()
+        interaction.create_initial_response = AsyncMock()
+
+        await ResponseBuilder(_interaction=interaction).components(view).send()
+
+        registry = ComponentRegistry.get_instance()
+        assert registry.get_handler("dynamic-test") is handler
+        registry.remove("dynamic-test")
 
     def test_get_handler(self):
         reg = ComponentRegistry()

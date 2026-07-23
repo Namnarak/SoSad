@@ -166,7 +166,14 @@ class CommandRouter:
     ) -> None:
         """Handle an interaction from Gateway (via InteractionCreateEvent)."""
         interaction = event.interaction
-        await self._handle_raw_interaction(interaction)
+        if isinstance(interaction, hikari.CommandInteraction):
+            await self._handle_raw_interaction(interaction)
+        elif isinstance(interaction, hikari.ComponentInteraction):
+            await self._route_component(interaction)
+        elif isinstance(interaction, hikari.ModalInteraction):
+            await self._route_modal(interaction)
+        elif isinstance(interaction, hikari.AutocompleteInteraction):
+            await self._route_autocomplete(interaction)
 
     async def handle_interaction_event(
         self,
@@ -209,7 +216,9 @@ class CommandRouter:
             logger.warning("Unknown command: %s", interaction.command_name)
             return
 
-        ctx = InteractionContext(
+        from sosad.components.base import ComponentContext
+
+        ctx = ComponentContext(
             interaction=interaction,
             client=self._client,
             app=self._client.app,
@@ -249,7 +258,7 @@ class CommandRouter:
         scope = ScopeManager()
 
         try:
-            await handler(ctx, scope)
+            await handler(ctx)
         except Exception:
             logger.exception("Error handling component %s", interaction.custom_id)
         finally:
@@ -269,7 +278,9 @@ class CommandRouter:
             logger.warning("No handler for modal: %s", interaction.custom_id)
             return
 
-        ctx = InteractionContext(
+        from sosad.components.base import ComponentContext
+
+        ctx = ComponentContext(
             interaction=interaction,
             client=self._client,
             app=self._client.app,
@@ -278,7 +289,7 @@ class CommandRouter:
         scope = ScopeManager()
 
         try:
-            await handler(ctx, scope)
+            await handler(ctx)
         except Exception:
             logger.exception("Error handling modal %s", interaction.custom_id)
         finally:

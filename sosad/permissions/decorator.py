@@ -27,7 +27,9 @@ def requires_permissions(*perms: hikari.Permissions) -> CheckFunc:
         if ctx.guild_id is None:
             return CheckResult.fail("This command can only be used in a guild.")
         member_perms = PermissionResolver.resolve_member_permissions(ctx.interaction)
-        required = perms[0]
+        required = hikari.Permissions.NONE
+        for permission in perms:
+            required |= permission
         if PermissionResolver.has_permission(member_perms, required):
             return CheckResult.ok()
         return CheckResult.fail("You don't have the required permissions.")

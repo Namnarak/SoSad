@@ -4,9 +4,13 @@ from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import hikari
+
+if TYPE_CHECKING:
+    from sosad.checks.base import CheckFunc
+    from sosad.cooldowns.buckets import CooldownConfig
 
 
 @dataclass(frozen=True, slots=True)
@@ -34,6 +38,22 @@ class SlashCommandMeta:
     is_dm_only: bool = False
     nsfw: bool = False
     is_guild_only: bool = False
+    checks: tuple[CheckFunc, ...] = ()
+    cooldown: CooldownConfig | None = None
+
+    def __post_init__(self) -> None:
+        if not self.checks:
+            object.__setattr__(
+                self,
+                "checks",
+                tuple(getattr(self.handler, "__sosad_checks__", ())),
+            )
+        if self.cooldown is None:
+            object.__setattr__(
+                self,
+                "cooldown",
+                getattr(self.handler, "__sosad_cooldown__", None),
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,6 +66,22 @@ class SubCommandMeta:
     handler: Callable[..., Any]
     options: tuple[OptionDescriptor, ...] = ()
     parent_scopes: tuple[hikari.Snowflake | str, ...] | None = None
+    checks: tuple[CheckFunc, ...] = ()
+    cooldown: CooldownConfig | None = None
+
+    def __post_init__(self) -> None:
+        if not self.checks:
+            object.__setattr__(
+                self,
+                "checks",
+                tuple(getattr(self.handler, "__sosad_checks__", ())),
+            )
+        if self.cooldown is None:
+            object.__setattr__(
+                self,
+                "cooldown",
+                getattr(self.handler, "__sosad_cooldown__", None),
+            )
 
 
 @dataclass(frozen=True, slots=True)

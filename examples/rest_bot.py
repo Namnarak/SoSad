@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import os
 
-from fastapi import FastAPI, Request
+import hikari
 
 import sosad
 
@@ -17,18 +17,9 @@ bot = sosad.RESTClient(
     public_key=os.environ["PUBLIC_KEY"],
 )
 
-app = FastAPI()
-
-
-@app.post("/interactions")
-async def handle_interaction(request: Request) -> dict:
-    body = await request.json()
-    return await bot.handle_request(body)
-
-
 @sosad.slash_command("ping", "Check bot latency")
 async def ping(ctx: sosad.InteractionContext) -> None:
-    await ctx.respond("Pong! (REST mode)")
+    await ctx.respond("Pong! (REST mode)").send()
 
 
 @sosad.slash_command("stats", "Bot statistics")
@@ -38,4 +29,7 @@ async def stats(ctx: sosad.InteractionContext) -> None:
         description="Running in REST mode",
         colour=0x00FF00,
     )
-    await ctx.respond(embed=embed)
+    await ctx.respond().embed(embed).send()
+
+
+bot.run(host="0.0.0.0", port=8080, path="/interactions")
