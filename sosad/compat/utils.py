@@ -8,6 +8,16 @@ from collections.abc import Callable, Iterable
 from typing import Any
 
 
+class _MissingSentinel:
+    """Sentinel used by discord.py for omitted optional arguments."""
+
+    def __repr__(self) -> str:
+        return "..."
+
+
+MISSING = _MissingSentinel()
+
+
 def get[T](iterable: Iterable[T], **attrs: Any) -> T | None:
     """Find the first element in iterable matching all keyword attributes.
 
@@ -17,7 +27,7 @@ def get[T](iterable: Iterable[T], **attrs: Any) -> T | None:
         channel = discord.utils.get(channels, name="general")
     """
     for item in iterable:
-        if all(getattr(item, k, _MISSING) == v for k, v in attrs.items()):
+        if all(getattr(item, k, MISSING) == v for k, v in attrs.items()):
             return item
     return None
 
@@ -28,9 +38,6 @@ def find[T](predicate: Callable[[T], bool], iterable: Iterable[T]) -> T | None:
         if predicate(item):
             return item
     return None
-
-
-_MISSING = object()
 
 
 def _escape(text: str, *, markdown: bool = False, mentions: bool = False) -> str:
@@ -76,6 +83,7 @@ def snowflake_time(id: int) -> _dt.datetime:
 
 
 __all__ = [
+    "MISSING",
     "get",
     "find",
     "escape_markdown",

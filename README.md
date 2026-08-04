@@ -20,7 +20,7 @@ pip install sosad
 
 | | |
 |---|---|
-| ✓ discord.py Compatibility | Change 1 import line |
+| ✓ discord.py Compatibility | Keep existing `discord` imports |
 | ✓ Native Hikari-first API | Type-safe, FastAPI-style DI |
 | ✓ Persistent Views + Paginator | Stateful components with built-in navigation |
 | ✓ Background Tasks | `@sosad.task(interval=n)` — cron without the pain |
@@ -34,10 +34,11 @@ pip install sosad
 ## Quick Migration — Before → After
 
 ```python
-# BEFORE (discord.py)
+# Existing discord.py code
 import discord
+from discord.ext import commands
 
-bot = discord.Client(intents=discord.Intents.default())
+bot = commands.Bot(command_prefix="!", intents=discord.Intents.default())
 
 @bot.command()
 async def ping(ctx):
@@ -47,17 +48,13 @@ bot.run("TOKEN")
 ```
 
 ```python
-# AFTER (SoSad) — change 1 line
-import sosad.compat as discord
-
-bot = discord.Bot(intents=discord.Intents.default())
-
-@bot.command(name="ping")
-async def ping(ctx):
-    await ctx.send("Pong!")
-
-bot.run("TOKEN")
+# AFTER (SoSad) — no source import changes
+# pip install sosad, then run the same code
 ```
+
+The wheel includes a `discord` import shim. The explicit form
+`import sosad.compat as discord` is also supported when you want to make the
+backend choice visible in your source.
 
 **What you get for free:**
 - Automatic rate limiting
@@ -96,8 +93,8 @@ High compatibility with common discord.py APIs:
 
 | discord.py | SoSad compat | Status |
 |---|---|---|
-| `discord.Client` | `discord.Bot` | ✓ |
-| `@bot.command()` | `@bot.command()` | ✓ (slash) |
+| `commands.Bot` | `commands.Bot` | ✓ |
+| `@bot.command()` / `@bot.hybrid_command()` | Same | ✓ |
 | `@bot.event` / `@bot.listen` | `@bot.event` / `@bot.listen` | ✓ |
 | `@bot.task` | `@bot.task(interval=n)` | ✓ |
 | `discord.Embed` | `discord.Embed` | ✓ |
@@ -115,11 +112,13 @@ High compatibility with common discord.py APIs:
 | `ctx.reply()` / `ctx.edit()` / `ctx.delete()` | `ctx.reply()` / `ctx.edit()` / `ctx.delete()` | ✓ |
 | `bot.load_extension()` | `bot.load_extension()` | ✓ |
 | `bot.add_cog()` | `bot.add_cog()` | ✓ |
+| `discord.ui.View/Modal/Select` | Same | ✓ (common class-based API) |
+| `discord.app_commands` | Same | ✓ (tree, context menu, decorators) |
 
 **Not yet supported:**
-- `discord.ui` (use SoSad native View/Modal builders)
-- `discord.app_commands` (use SoSad native `@sosad.slash_command`)
-- Voice / Guild channels / Member editing via compat (use hikari directly)
+- Complete behavioral parity with every discord.py extension
+- Full message/guild/voice object method parity (use Hikari directly outside
+  the compatibility surface)
 
 ## Why SoSad?
 
@@ -130,7 +129,7 @@ High compatibility with common discord.py APIs:
 | DI | None | FastAPI-style auto-resolve |
 | Middleware | Before/After events | ASGI-style pipeline |
 | Plugins | Manual load | Auto-discover `plugins/` |
-| Components | Class-based Views | Builder pattern |
+| Components | Class-based Views | Class-based compatibility + native builders |
 | Persistent views | `discord.ui.View(timeout=)` | `PersistentView` with cleanup |
 | Paginator | `discord.ui.View` + manual | Built-in `Paginator` |
 | Tasks | `tasks.loop` | `@sosad.task(interval=n)` |

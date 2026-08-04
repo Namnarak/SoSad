@@ -1,7 +1,11 @@
-"""discord.py-compatible Bot class — works with both Gateway and REST."""
+"""A discord.py-shaped facade over SoSad's Gateway and REST clients."""
 
 from __future__ import annotations
 
+import asyncio
+import importlib
+import inspect
+import sys
 from collections.abc import Callable
 from typing import Any, Literal
 
@@ -9,6 +13,8 @@ import hikari
 
 import sosad
 from sosad.commands.prefix import PrefixContext, get_prefix_registry
+from sosad.compat._awaitable import DeferredAwaitable, ImmediateAwaitable
+from sosad.compat.app_commands import CommandTree
 from sosad.compat.context import Context
 from sosad.core.base_client import BaseClient
 from sosad.core.client import Client
@@ -18,46 +24,18 @@ BotMode = Literal["gateway", "rest"]
 
 
 class Bot:
-    """discord.py-compatible Bot that supports both Gateway and REST modes.
+    """Compatibility Bot supporting the constructor/run split from discord.py.
 
-    Usage (Gateway)::
-
-        import sosad.compat as discord
-
-        bot = discord.Bot(
-            command_prefix="!",
-            intents=discord.Intents.default(),
-            token="TOKEN",
-        )
-
-        @bot.command(name="ping")
-        async def ping(ctx):
-            await ctx.send("Pong!")
-
-        bot.run()
-
-    Usage (REST)::
-
-        import sosad.compat as discord
-
-        bot = discord.Bot(
-            mode="rest",
-            token="TOKEN",
-            public_key="...",
-        )
-
-        @bot.command(name="ping")
-        async def ping(ctx):
-            await ctx.send("Pong!")
-
-        bot.run(host="0.0.0.0", port=8080)
+    ``token`` is optional at construction time and may be supplied to
+    :meth:`run`, matching discord.py's normal usage.  A real token is only
+    required when the gateway or REST server is actually started.
     """
 
     def __init__(
         self,
+        command_prefix: Any = "!",
         *,
         mode: BotMode = "gateway",
-        command_prefix: str = "!",
         intents: hikari.Intents | None = None,
         token: str | None = None,
         public_key: str | bytes | None = None,
@@ -68,12 +46,37 @@ class Bot:
     ) -> None:
         self._mode = mode
         self._command_prefix = command_prefix
+        self._token = token
+        self.help_command = kwargs.pop("help_command", None)
+        tree_cls = kwargs.pop("tree_cls", CommandTree)
+        self.case_insensitive = kwargs.pop("case_insensitive", False)
+        self.strip_after_prefix = kwargs.pop("strip_after_prefix", False)
+        # These are valid discord.py constructor options, but are not Hikari
+        # GatewayBot options.  Keep them as attributes instead of forwarding
+        # them into Hikari and causing an unexpected-keyword error at run().
+        for option in (
+            "activity",
+            "status",
+            "allowed_mentions",
+            "chunk_guilds_at_startup",
+            "member_cache_flags",
+            "max_messages",
+            "owner_id",
+            "owner_ids",
+        ):
+            setattr(self, option, kwargs.pop(option, None))
 
+        if intents is None:
+            intents = hikari.Intents.ALL_UNPRIVILEGED
+        self.intents = intents
+        native_intents = (
+            intents.to_hikari() if hasattr(intents, "to_hikari") else intents
+        )
+
+        client_token = token or ""
         if mode == "rest":
-            if token is None:
-                raise ValueError("token is required for REST mode")
             self._client: BaseClient = RESTClient(
-                token=token,
+                token=client_token,
                 public_key=public_key,
                 logs=logs,
                 banner=banner,
@@ -81,13 +84,9 @@ class Bot:
                 **kwargs,
             )
         else:
-            if intents is None:
-                intents = hikari.Intents.ALL_UNPRIVILEGED
-            if token is None:
-                raise ValueError("token is required")
             self._client = Client(
-                token=token,
-                intents=intents,
+                token=client_token,
+                intents=native_intents,
                 logs=logs,
                 banner=banner,
                 auto_discover_plugins=auto_discover_plugins,
@@ -95,7 +94,15 @@ class Bot:
             )
 
         self._prefix_commands: dict[str, Callable[..., Any]] = {}
-        if hasattr(self._client, "prefix"):
+        self._cogs: dict[str, Any] = {}
+        self._extensions: dict[str, Any] = {}
+        self._tree = tree_cls(self)
+        self._ready = asyncio.Event()
+        self._setup_hook_registered = False
+        self._events_registered = False
+        self._closed = False
+        self._presence: Any = None
+        if hasattr(self._client, "prefix") and isinstance(command_prefix, str):
             self._client.prefix = command_prefix
 
     # ── Client property delegation ──
@@ -118,15 +125,55 @@ class Bot:
 
     @property
     def scheduler(self) -> Any:
-        if hasattr(self._client, "scheduler"):
-            return self._client.scheduler
-        return None
+        return getattr(self._client, "scheduler", None)
 
     @property
     def bot(self) -> Any:
-        if hasattr(self._client, "bot"):
+        try:
             return self._client.bot
-        return None
+        except RuntimeError:
+            return None
+
+    @property
+    def rest(self) -> Any:
+        try:
+            return self._client.rest
+        except (AttributeError, RuntimeError):
+            return None
+
+    @property
+    def http(self) -> Any:
+        """discord.py's HTTP attribute, mapped to Hikari's REST client."""
+        return self.rest
+
+    @property
+    def tree(self) -> CommandTree:
+        return self._tree
+
+    @property
+    def cogs(self) -> dict[str, Any]:
+        return dict(self._cogs)
+
+    @property
+    def guilds(self) -> list[Any]:
+        client = self.bot
+        if client is None or not hasattr(client, "cache"):
+            return []
+        return list(client.cache.get_available_guilds_view().values())
+
+    @property
+    def user(self) -> Any:
+        client = self.bot
+        return client.get_me() if client is not None else None
+
+    @property
+    def latency(self) -> float:
+        client = self.bot
+        return float(getattr(client, "heartbeat_latency", 0.0) or 0.0)
+
+    @property
+    def is_closed(self) -> bool:
+        return self._closed
 
     # ── Client method delegation ──
 
@@ -143,7 +190,7 @@ class Bot:
         if hasattr(self._client, "add_check"):
             self._client.add_check(check)
 
-    # ── discord.py-compatible API ──
+    # ── discord.py-compatible decorators ──
 
     def command(
         self,
@@ -151,23 +198,9 @@ class Bot:
         description: str | None = None,
         **kwargs: Any,
     ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-        """Register a command (slash or prefix).
-
-        Usage::
-
-            @bot.command(name="ping")
-            async def ping(ctx):
-                await ctx.send("Pong!")
-        """
+        """Register a top-level slash command and return the original callback."""
         def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
-            cmd_name = name or func.__name__
-            cmd_desc = description or func.__doc__ or cmd_name
-
-            @sosad.slash_command(cmd_name, cmd_desc, **kwargs)
-            async def wrapper(ctx: Any) -> None:
-                compat_ctx = Context.from_sad(ctx)
-                await func(compat_ctx)
-
+            self._register_callback(func, name=name, description=description, **kwargs)
             return func
 
         return decorator
@@ -176,30 +209,10 @@ class Bot:
         self,
         event_type: type | None = None,
     ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-        """Register an event handler.
-
-        Usage::
-
-            @bot.event
-            async def on_message(message):
-                print(message.content)
-        """
         def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
-            if event_type is not None:
-                bot_event_type = event_type
-            else:
-                func_name = func.__name__
-                event_name = func_name.replace("on_", "")
-                bot_event_type = getattr(
-                    hikari, f"{event_name.title().replace('_', '')}Event", None
-                )
-                if bot_event_type is None:
-                    return func
-
-            @sosad.listen(bot_event_type)
-            async def wrapper(event: Any) -> None:
-                await func(event)
-
+            resolved_type = event_type or self._event_type_for_name(func.__name__)
+            if resolved_type is not None and hasattr(self._client, "listen"):
+                self._client.listen(resolved_type)(self._adapt_event(func, resolved_type))
             return func
 
         return decorator
@@ -211,18 +224,6 @@ class Bot:
         name: str | None = None,
         once: bool = False,
     ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-        """Register a background task.
-
-        Usage::
-
-            @bot.task(interval=300)
-            async def cleanup():
-                await db.purge_old_records()
-
-            @bot.task(interval=10, once=True, name="startup")
-            async def on_startup():
-                print("Startup check complete")
-        """
         def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
             task_name = name or func.__name__
             meta = sosad.tasks.TaskMeta(
@@ -231,108 +232,401 @@ class Bot:
                 interval=interval,
                 once=once,
             )
-            if hasattr(self._client, "scheduler"):
-                self._client.scheduler.register(meta)
+            self._client.scheduler.register(meta)
             return func
+
         return decorator
 
     def listen(
         self,
         event_type: type | None = None,
     ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-        """Register an event listener (alias for event)."""
         return self.event(event_type)
 
-    def load_extension(self, name: str) -> None:
-        """Load a module (compat for discord.py load_extension).
+    # ── Extensions and cogs ──
 
-        Usage::
+    def load_extension(self, name: str) -> DeferredAwaitable:
+        return DeferredAwaitable(lambda: self._load_extension(name))
 
-            bot.load_extension("cogs.music")
-        """
-        import importlib
+    async def _load_extension(self, name: str) -> Any:
+        if name in self._extensions:
+            from sosad.compat.ext.commands import ExtensionAlreadyLoaded
 
-        try:
-            mod = importlib.import_module(name)
-            if hasattr(mod, "setup"):
-                mod.setup(self)
-        except ImportError:
-            pass
+            raise ExtensionAlreadyLoaded(name)
+        module = importlib.import_module(name)
+        setup = getattr(module, "setup", None)
+        if setup is not None:
+            result = setup(self)
+            if inspect.isawaitable(result):
+                await result
+        self._extensions[name] = module
+        return module
 
-    def add_cog(self, cog_instance: Any) -> None:
-        """Add a Cog (discord.py compatible).
+    def unload_extension(self, name: str) -> DeferredAwaitable:
+        return DeferredAwaitable(lambda: self._unload_extension(name))
 
-        Usage::
+    async def _unload_extension(self, name: str) -> Any:
+        if name not in self._extensions:
+            from sosad.compat.ext.commands import ExtensionNotLoaded
 
-            class MyCog(discord.Cog):
-                ...
+            raise ExtensionNotLoaded(name)
+        module = self._extensions.pop(name)
+        prefix = f"{name}."
+        for module_name in list(sys.modules):
+            if module_name == name or module_name.startswith(prefix):
+                sys.modules.pop(module_name, None)
+        return module
 
-            bot.add_cog(MyCog())
-        """
+    def reload_extension(self, name: str) -> DeferredAwaitable:
+        async def reload() -> Any:
+            if name in self._extensions:
+                await self._unload_extension(name)
+            return await self._load_extension(name)
+
+        return DeferredAwaitable(lambda: reload())
+
+    def add_cog(self, cog_instance: Any, *, override: bool = False) -> ImmediateAwaitable:
+        name = getattr(type(cog_instance), "__cog_name__", type(cog_instance).__name__.lower())
+        if name in self._cogs and not override:
+            raise ValueError(f"Cog {name!r} is already registered")
+        self._cogs[name] = cog_instance
         if hasattr(cog_instance, "_set_bot"):
             cog_instance._set_bot(self)
-        if hasattr(cog_instance, "cog_load"):
-            import asyncio
-            from contextlib import suppress
-            with suppress(Exception):
-                asyncio.ensure_future(cog_instance.cog_load())
+        for command in self._commands_from_cog(cog_instance):
+            self._register_cog_command(cog_instance, command)
+        return ImmediateAwaitable(cog_instance)
 
-        # Register all slash commands on this cog
-        for attr_name in dir(cog_instance):
-            attr = getattr(cog_instance, attr_name)
-            if isinstance(attr, sosad.commands.models.SlashCommandMeta):
-                from sosad.commands.registration import get_registry
-                # Re-register with bound method
-                async def bound_handler(ctx: Any, _attr=attr, _self=cog_instance) -> None:
-                    compat_ctx = Context.from_sad(ctx)
-                    await _attr.handler(_self, compat_ctx)
+    def remove_cog(self, name: str) -> ImmediateAwaitable:
+        return ImmediateAwaitable(self._cogs.pop(name, None))
 
-                meta = sosad.commands.models.SlashCommandMeta(
-                    name=attr.name,
-                    description=attr.description,
-                    handler=bound_handler,
-                    options=attr.options,
-                    is_dm_only=attr.is_dm_only,
-                    is_guild_only=attr.is_guild_only,
-                    nsfw=attr.nsfw,
-                    default_member_permissions=attr.default_member_permissions,
-                )
-                get_registry().add(meta)
+    def get_cog(self, name: str) -> Any | None:
+        return self._cogs.get(name)
+
+    def get_command(self, name: str) -> Any | None:
+        for cog in self._cogs.values():
+            for command in self._commands_from_cog(cog):
+                if command.name == name or name in command.aliases:
+                    return command
+        return None
+
+    # ── Prefix helpers and runtime helpers ──
 
     def prefix_command(
         self,
         name: str | None = None,
         **kwargs: Any,
     ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-        """Register a prefix command (!ping).
+        del kwargs
 
-        Usage::
-
-            @bot.prefix_command(name="ping")
-            async def ping(ctx):
-                await ctx.send("Pong!")
-        """
         def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
             cmd_name = name or func.__name__
             registry = get_prefix_registry()
 
             async def wrapper(ctx: PrefixContext) -> None:
-                await func(ctx)
+                result = func(Context.from_prefix(ctx, bot=self))
+                if inspect.isawaitable(result):
+                    await result
 
             registry.add(cmd_name, wrapper)
+            self._prefix_commands[cmd_name] = func
             return func
+
         return decorator
 
-    def run(self, *args: Any, **kwargs: Any) -> None:
-        """Start the bot.
+    async def process_commands(self, message: Any) -> None:
+        del message
 
-        Gateway mode: no arguments (uses stored token/intents).
-        REST mode: pass host, port, ssl_context, etc.
-        """
+    async def wait_until_ready(self) -> None:
+        await self._ready.wait()
+
+    async def change_presence(self, *, activity: Any = None, **kwargs: Any) -> None:
+        self._presence = activity
+        client = self.bot
+        if client is None or not hasattr(client, "update_presence"):
+            return
+        if hasattr(activity, "to_hikari"):
+            activity = activity.to_hikari()
+        await client.update_presence(activity=activity, **kwargs)
+
+    async def is_owner(self, user: Any) -> bool:
+        del user
+        owner_ids = getattr(self, "owner_ids", None)
+        owner_id = getattr(self, "owner_id", None)
+        return bool(owner_ids or owner_id)
+
+    def get_user(self, user_id: int) -> Any | None:
+        client = self.bot
+        if client is not None and hasattr(client, "cache"):
+            return client.cache.get_user(hikari.Snowflake(user_id))
+        return None
+
+    async def fetch_user(self, user_id: int) -> Any:
+        if self.rest is None:
+            raise RuntimeError("Bot has not been started")
+        return await self.rest.fetch_user(user_id)
+
+    async def application_info(self) -> Any:
+        if self.rest is None:
+            raise RuntimeError("Bot has not been started")
+        return await self.rest.fetch_my_application()
+
+    # ── Start/stop ──
+
+    def run(self, token: str | None = None, *args: Any, **kwargs: Any) -> None:
+        # discord.py accepts this logging switch; Hikari configures logging
+        # before startup, so it has no equivalent runtime argument.
+        kwargs.pop("root_logger", None)
+        if token is not None:
+            self._token = token
+            self._client._token = token
+        if not self._token:
+            raise ValueError("token is required when the bot is started")
+        if self._mode == "gateway":
+            self._install_subclass_runtime()
         self._client.run(*args, **kwargs)
 
     async def close(self) -> None:
+        self._closed = True
+        self._ready.set()
         await self._client.close()
+
+    # ── Internal translation ──
+
+    def _register_callback(self, callback: Callable[..., Any], **kwargs: Any) -> None:
+        from sosad.compat.ext.commands import Command
+
+        command = Command(callback, kind="slash", **kwargs)
+        self._register_command(self, command, callback)
+
+    def _register_app_command(self, command: Any, *, guild: Any = None) -> None:
+        if guild is not None:
+            return
+        if not hasattr(command, "callback"):
+            return
+        if getattr(command, "type", None) == "context_menu":
+            from sosad.commands.models import SlashCommandMeta
+            from sosad.commands.registration import get_registry
+
+            annotation = getattr(command.callback, "__annotations__", {})
+            command_type = (
+                hikari.CommandType.USER
+                if "user" in annotation
+                else hikari.CommandType.MESSAGE
+            )
+
+            async def handler(ctx: Any) -> Any:
+                from sosad.compat.interaction import wrap_interaction
+
+                result = command.callback(wrap_interaction(ctx.interaction))
+                if inspect.isawaitable(result):
+                    return await result
+                return result
+
+            get_registry().add(
+                SlashCommandMeta(
+                    name=command.name,
+                    description=command.description,
+                    handler=handler,
+                    command_type=command_type,
+                )
+            )
+            return
+        self._register_command(
+            self,
+            command,
+            command.callback,
+            interaction_style=bool(getattr(command, "is_app_command", False)),
+        )
+
+    def _register_cog_command(self, cog: Any, command: Any) -> None:
+        from sosad.compat.ext.commands import Group
+
+        if isinstance(command, Group) and command.kind in ("hybrid", "slash"):
+            self.tree._global.setdefault(command.name, command)
+            self._register_group(command)
+            for child in command.children.values():
+                self._register_subcommand(cog, command, child)
+            return
+        if command.kind in ("hybrid", "slash"):
+            self.tree._global.setdefault(command.name, command)
+            self._register_command(
+                cog,
+                command,
+                command.callback,
+                interaction_style=bool(getattr(command, "is_app_command", False)),
+            )
+        else:
+            self._register_prefix_cog_command(cog, command)
+        for child in getattr(command, "children", {}).values():
+            if command.kind in ("hybrid", "slash"):
+                self._register_subcommand(cog, command, child)
+
+    def _register_group(self, command: Any) -> None:
+        from sosad.commands.models import CommandGroupMeta
+        from sosad.commands.registration import get_registry
+
+        get_registry().add(
+            CommandGroupMeta(
+                name=command.name,
+                description=command.description,
+            )
+        )
+
+    def _register_command(
+        self,
+        owner: Any,
+        command: Any,
+        callback: Any,
+        *,
+        interaction_style: bool = False,
+    ) -> None:
+        from dataclasses import replace
+
+        from sosad.commands.decorators import _extract_options
+        from sosad.commands.models import SlashCommandMeta
+        from sosad.commands.registration import get_registry
+
+        descriptions = getattr(callback, "_sosad_descriptions", {})
+        options = list(_extract_options(callback, descriptions))
+        choices = getattr(callback, "_sosad_choices", {})
+        for index, option in enumerate(options):
+            values = choices.get(option.name)
+            if values:
+                options[index] = replace(
+                    option,
+                    choices=tuple((value["name"], value["value"]) for value in values),
+                )
+
+        async def handler(ctx: Any, **values: Any) -> Any:
+            if interaction_style:
+                from sosad.compat.interaction import wrap_interaction
+
+                result = callback(
+                    owner,
+                    wrap_interaction(ctx.interaction),
+                    **values,
+                ) if owner is not self else callback(
+                    wrap_interaction(ctx.interaction),
+                    **values,
+                )
+            else:
+                compat_ctx = Context.from_sad(ctx, bot=self)
+                if owner is self:
+                    result = callback(compat_ctx, **values)
+                else:
+                    result = callback(owner, compat_ctx, **values)
+            if inspect.isawaitable(result):
+                return await result
+            return result
+
+        meta = SlashCommandMeta(
+            name=command.name,
+            description=command.description,
+            handler=handler,
+            options=tuple(options),
+            is_guild_only=bool(getattr(callback, "_sosad_guild_only", False)),
+        )
+        get_registry().add(meta)
+
+    def _register_subcommand(self, cog: Any, group: Any, command: Any) -> None:
+        from dataclasses import replace
+
+        from sosad.commands.decorators import _extract_options
+        from sosad.commands.models import SubCommandMeta
+        from sosad.commands.registration import get_registry
+
+        callback = command.callback
+        descriptions = getattr(callback, "_sosad_descriptions", {})
+        options = list(_extract_options(callback, descriptions))
+        choices = getattr(callback, "_sosad_choices", {})
+        for index, option in enumerate(options):
+            values = choices.get(option.name)
+            if values:
+                options[index] = replace(
+                    option,
+                    choices=tuple((value["name"], value["value"]) for value in values),
+                )
+
+        async def handler(ctx: Any, **values: Any) -> Any:
+            compat_ctx = Context.from_sad(ctx, bot=self)
+            result = callback(cog, compat_ctx, **values)
+            if inspect.isawaitable(result):
+                return await result
+            return result
+
+        get_registry().add(
+            SubCommandMeta(
+                group=group.name,
+                name=command.name,
+                description=command.description,
+                handler=handler,
+                options=tuple(options),
+            )
+        )
+
+    def _register_prefix_cog_command(self, cog: Any, command: Any) -> None:
+        registry = get_prefix_registry()
+
+        async def handler(ctx: PrefixContext) -> None:
+            compat_ctx = Context.from_prefix(ctx, bot=self)
+            result = command.callback(cog, compat_ctx)
+            if inspect.isawaitable(result):
+                await result
+
+        registry.add(command.name, handler)
+
+    @staticmethod
+    def _commands_from_cog(cog: Any) -> list[Any]:
+        from sosad.compat.ext.commands import Command
+
+        return [value for value in vars(type(cog)).values() if isinstance(value, Command)]
+
+    @staticmethod
+    def _event_type_for_name(name: str) -> type[hikari.Event] | None:
+        mapping: dict[str, type[hikari.Event]] = {
+            "on_ready": hikari.StartedEvent,
+            "on_message": hikari.GuildMessageCreateEvent,
+            "on_interaction": hikari.InteractionCreateEvent,
+        }
+        return mapping.get(name)
+
+    @staticmethod
+    def _adapt_event(callback: Callable[..., Any], event_type: type) -> Callable[..., Any]:
+        async def handler(event: Any) -> Any:
+            value = event.message if event_type is hikari.GuildMessageCreateEvent else event
+            result = callback(value)
+            if inspect.isawaitable(result):
+                return await result
+            return result
+
+        return handler
+
+    def _install_subclass_runtime(self) -> None:
+        if self._events_registered:
+            return
+        self._events_registered = True
+        setup_hook = getattr(type(self), "setup_hook", None)
+        if setup_hook is not None:
+            async def setup(event: Any) -> None:
+                del event
+                await setup_hook(self)
+                self._ready.set()
+
+            self._client.listen(hikari.StartedEvent)(setup)
+
+        for name in ("on_message", "on_interaction", "on_ready"):
+            callback = getattr(type(self), name, None)
+            if callback is None:
+                continue
+            event_type = self._event_type_for_name(name)
+            if event_type is not None:
+                bound = callback.__get__(self)
+                self._client.listen(event_type)(self._adapt_event(bound, event_type))
+
+    async def _sync_tree(self, *, guild: Any = None) -> None:
+        del guild
+        if self.bot is not None and hasattr(self._client, "_sync_all_commands"):
+            await self._client._sync_all_commands()
 
 
 __all__ = ["Bot", "BotMode"]

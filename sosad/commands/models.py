@@ -38,6 +38,7 @@ class SlashCommandMeta:
     is_dm_only: bool = False
     nsfw: bool = False
     is_guild_only: bool = False
+    command_type: hikari.CommandType = hikari.CommandType.SLASH
     checks: tuple[CheckFunc, ...] = ()
     cooldown: CooldownConfig | None = None
 

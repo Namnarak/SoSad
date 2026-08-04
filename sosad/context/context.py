@@ -327,6 +327,14 @@ class InteractionContext:
         return self.interaction.channel_id
 
     @property
+    def voice_state(self) -> hikari.VoiceState | None:
+        """Return the invoking member's cached voice state, when available."""
+        if self.guild_id is None:
+            return None
+
+        return self.client.bot.cache.get_voice_state(self.guild_id, self.author.id)
+
+    @property
     def options(self) -> dict[str, hikari.CommandInteractionOption]:
         if isinstance(self.interaction, hikari.CommandInteraction):
             return {opt.name: opt for opt in (self.interaction.options or ())}
@@ -378,6 +386,7 @@ class InteractionContext:
         content: str | None = None,
         *,
         ephemeral: bool = False,
+        embed: hikari.Embed | None = None,
     ) -> ResponseBuilder:
         """Create a response. Supports both shortcut and builder patterns.
 
@@ -398,6 +407,8 @@ class InteractionContext:
         builder = ResponseBuilder(_interaction=self.interaction)
         if content is not None:
             builder = builder.content(content)
+        if embed is not None:
+            builder = builder.embed(embed)
         if ephemeral:
             builder = builder.ephemeral()
         return builder

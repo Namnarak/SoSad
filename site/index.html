@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://sosad.cytechteam.site/wiki/">
+        <link rel="canonical" href="https://sosad.cytechteam.site/">
       
       
       
@@ -465,10 +465,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#for-hobby-bots-production" class="md-nav__link">
+  <a href="#for-discordpy-refugees" class="md-nav__link">
     <span class="md-ellipsis">
       
-        For hobby bots → production
+        For discord.py refugees
       
     </span>
   </a>
@@ -496,6 +496,17 @@
     <span class="md-ellipsis">
       
         Quick install
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture
       
     </span>
   </a>
@@ -1415,10 +1426,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#for-hobby-bots-production" class="md-nav__link">
+  <a href="#for-discordpy-refugees" class="md-nav__link">
     <span class="md-ellipsis">
       
-        For hobby bots → production
+        For discord.py refugees
       
     </span>
   </a>
@@ -1446,6 +1457,17 @@
     <span class="md-ellipsis">
       
         Quick install
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture
       
     </span>
   </a>
@@ -1491,7 +1513,7 @@
 <p>Change one line. Get production-ready features instantly.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">sosad.compat</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">discord</span>  <span class="c1"># ← that&#39;s it</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">bot</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">Bot</span><span class="p">(</span><span class="n">intents</span><span class="o">=</span><span class="n">discord</span><span class="o">.</span><span class="n">Intents</span><span class="o">.</span><span class="n">default</span><span class="p">())</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">bot</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">Bot</span><span class="p">(</span><span class="n">intents</span><span class="o">=</span><span class="n">hikari</span><span class="o">.</span><span class="n">Intents</span><span class="o">.</span><span class="n">ALL_UNPRIVILEGED</span><span class="p">)</span>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="nd">@bot</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;ping&quot;</span><span class="p">)</span>
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">ping</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
@@ -1504,7 +1526,7 @@
 </div>
 <hr />
 <h2 id="why-sosad">Why SoSad?</h2>
-<h3 id="for-hobby-bots-production">For hobby bots → production</h3>
+<h3 id="for-discordpy-refugees">For discord.py refugees</h3>
 <table>
 <thead>
 <tr>
@@ -1516,38 +1538,58 @@
 <tbody>
 <tr>
 <td>Rate limiting</td>
-<td>Manual</td>
-<td>Automatic</td>
+<td>Manual retry</td>
+<td>Automatic per-route</td>
 </tr>
 <tr>
 <td>Error handling</td>
 <td>try/except</td>
-<td>Pipeline</td>
+<td>Error pipeline</td>
 </tr>
 <tr>
-<td>DI</td>
+<td>Dependency Injection</td>
 <td>None</td>
-<td>FastAPI-style</td>
+<td>FastAPI-style container</td>
 </tr>
 <tr>
 <td>Middleware</td>
-<td>Before/After</td>
-<td>ASGI pipeline</td>
+<td>Before/After hooks</td>
+<td>ASGI-style pipeline</td>
 </tr>
 <tr>
 <td>Plugins</td>
-<td>Manual</td>
+<td>Manual <code>load_extension</code></td>
 <td>Auto-discover</td>
 </tr>
 <tr>
 <td>Config</td>
-<td>.env manual</td>
-<td><code>class Config(sosad.Settings)</code></td>
+<td><code>os.getenv</code></td>
+<td><code>pydantic-style Settings</code></td>
 </tr>
 <tr>
 <td>Type safety</td>
 <td>Partial</td>
-<td>Full strict</td>
+<td>Pyright strict</td>
+</tr>
+<tr>
+<td>REST mode</td>
+<td>❌</td>
+<td>✅ (no gateway needed)</td>
+</tr>
+<tr>
+<td>Persistent Components</td>
+<td>❌</td>
+<td>✅ (survive restarts)</td>
+</tr>
+<tr>
+<td>Task scheduler</td>
+<td>❌</td>
+<td>✅ (cron-like)</td>
+</tr>
+<tr>
+<td>CLI scaffold</td>
+<td>❌</td>
+<td>✅ (<code>sosad new</code>)</td>
 </tr>
 </tbody>
 </table>
@@ -1572,32 +1614,74 @@
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="c1"># or</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>uv<span class="w"> </span>add<span class="w"> </span>sosad
 </code></pre></div>
+<hr />
+<h2 id="architecture">Architecture</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>┌──────────────────────────────────────────────────┐
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>│                    Your Code                      │
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>│  ┌──────────┐  ┌──────────┐  ┌────────────────┐  │
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>│  │ Commands  │  │ Plugins   │  │  Components     │  │
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>│  └────┬─────┘  └────┬─────┘  └───────┬────────┘  │
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>├───────┴─────────────┴─────────────────┴──────────┤
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>│                    SoSad Core                      │
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>│  ┌──────────┐  ┌──────────┐  ┌────────────────┐  │
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>│  │  Router   │  │Middleware│  │  DI Container   │  │
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>│  └────┬─────┘  └────┬─────┘  └───────┬────────┘  │
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>│       └─────────────┴─────────────────┘           │
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>│  ┌──────────────────────────────────────────────┐  │
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>│  │              Hikari (transport)               │  │
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>│  └──────────────────────────────────────────────┘  │
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>└──────────────────────────────────────────────────┘
+</code></pre></div>
 <h2 id="features">Features</h2>
 <div class="grid cards">
 <ul>
 <li>
-<p>:material-speedometer:{ .lg .middle } <strong>Fast</strong></p>
+<p>:material-speedometer:{ .lg .middle } <strong>Auto Rate Limiting</strong></p>
 <hr />
-<p>Auto rate limiting per-route. No more HTTP 429s.</p>
+<p>Per-route rate limiting. No more HTTP 429s. Works for both Gateway and REST mode.</p>
 <p><a href="guides/installation/">:octicons-arrow-right-24: Getting Started</a></p>
 </li>
 <li>
-<p>:material-shield-lock:{ .lg .middle } <strong>Safe</strong></p>
+<p>:material-shield-lock:{ .lg .middle } <strong>Type Safe</strong></p>
 <hr />
-<p>Full type hints. Pyright strict. Catch errors before runtime.</p>
+<p>Full type hints. Pyright strict mode. Catch errors before runtime.</p>
 <p><a href="guides/commands/">:octicons-arrow-right-24: Commands</a></p>
 </li>
 <li>
-<p>:material-puzzle:{ .lg .middle } <strong>Modular</strong></p>
+<p>:material-puzzle:{ .lg .middle } <strong>Modular Plugins</strong></p>
 <hr />
-<p>Plugin auto-discovery. Drop files in <code>plugins/</code>, done.</p>
+<p>Drop files in <code>plugins/</code> — auto-discovered and loaded.</p>
 <p><a href="guides/plugins/">:octicons-arrow-right-24: Plugins</a></p>
 </li>
 <li>
-<p>:material-cog:{ .lg .middle } <strong>Powerful</strong></p>
+<p>:material-cog:{ .lg .middle } <strong>DI + Middleware</strong></p>
 <hr />
-<p>DI, middleware, components, background tasks. All included.</p>
+<p>FastAPI-style dependency injection. ASGI-inspired middleware pipeline.</p>
 <p><a href="guides/middleware/">:octicons-arrow-right-24: Middleware</a></p>
+</li>
+<li>
+<p>:material-view-grid:{ .lg .middle } <strong>Components</strong></p>
+<hr />
+<p>Buttons, Select Menus, Modals, Persistent Views, Paginator.</p>
+<p><a href="guides/components/">:octicons-arrow-right-24: Components</a></p>
+</li>
+<li>
+<p>:material-clock:{ .lg .middle } <strong>Background Tasks</strong></p>
+<hr />
+<p>Decorator-based task scheduler with intervals and CRON-like triggers.</p>
+<p><a href="guides/tasks/">:octicons-arrow-right-24: Tasks</a></p>
+</li>
+<li>
+<p>:material-api:{ .lg .middle } <strong>REST Mode</strong></p>
+<hr />
+<p>Run without a gateway. Perfect for webhooks, microservices, and serverless.</p>
+<p><a href="guides/rest/">:octicons-arrow-right-24: REST API</a></p>
+</li>
+<li>
+<p>:material-swap-horizontal:{ .lg .middle } <strong>discord.py Compat</strong></p>
+<hr />
+<p>Change one import. Keep your existing codebase.</p>
+<p><a href="guides/migration/">:octicons-arrow-right-24: Migration</a></p>
 </li>
 </ul>
 </div>

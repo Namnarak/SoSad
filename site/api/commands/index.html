@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://sosad.cytechteam.site/wiki/api/commands/">
+        <link rel="canonical" href="https://sosad.cytechteam.site/api/commands/">
       
       
         <link rel="prev" href="../client/">
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#api-commands" class="md-skip">
+        <a href="#commands-api-reference" class="md-skip">
           Skip to content
         </a>
       
@@ -1228,6 +1228,24 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commands
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -1244,6 +1262,119 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#decorators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decorators
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Decorators">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sosadslash_commandname-description" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sosad.slash_command(name, description)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sosadcommand_groupname-description" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sosad.command_group(name, description)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sosadcomponentsbuttoncustom_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sosad.components.button(custom_id)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sosadcomponentsselectcustom_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sosad.components.select(custom_id)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sosadcomponentsmodalcustom_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sosad.components.modal(custom_id)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#annotations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Annotations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parameter-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameter options
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1305,6 +1436,108 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#decorators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decorators
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Decorators">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sosadslash_commandname-description" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sosad.slash_command(name, description)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sosadcommand_groupname-description" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sosad.command_group(name, description)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sosadcomponentsbuttoncustom_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sosad.components.button(custom_id)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sosadcomponentsselectcustom_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sosad.components.select(custom_id)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sosadcomponentsmodalcustom_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sosad.components.modal(custom_id)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#annotations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Annotations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parameter-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameter options
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1324,8 +1557,99 @@
   
 
 
-<h1 id="api-commands">API: Commands</h1>
-<p>API reference coming soon.</p>
+<h1 id="commands-api-reference">Commands API Reference</h1>
+<h2 id="decorators">Decorators</h2>
+<h3 id="sosadslash_commandname-description"><code>sosad.slash_command(name, description)</code></h3>
+<p>Register a slash command.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nd">@sosad</span><span class="o">.</span><span class="n">slash_command</span><span class="p">(</span><span class="s2">&quot;ping&quot;</span><span class="p">,</span> <span class="s2">&quot;Check latency&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">ping</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">sosad</span><span class="o">.</span><span class="n">InteractionContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="o">...</span>
+</code></pre></div>
+<h3 id="sosadcommand_groupname-description"><code>sosad.command_group(name, description)</code></h3>
+<p>Create a command group for subcommands.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">group</span> <span class="o">=</span> <span class="n">sosad</span><span class="o">.</span><span class="n">command_group</span><span class="p">(</span><span class="s2">&quot;config&quot;</span><span class="p">,</span> <span class="s2">&quot;Configuration&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nd">@group</span><span class="o">.</span><span class="n">sub_command</span><span class="p">(</span><span class="s2">&quot;view&quot;</span><span class="p">,</span> <span class="s2">&quot;View config&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">config_view</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">sosad</span><span class="o">.</span><span class="n">InteractionContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="o">...</span>
+</code></pre></div>
+<h3 id="sosadcomponentsbuttoncustom_id"><code>sosad.components.button(custom_id)</code></h3>
+<p>Register a button handler.</p>
+<h3 id="sosadcomponentsselectcustom_id"><code>sosad.components.select(custom_id)</code></h3>
+<p>Register a select menu handler.</p>
+<h3 id="sosadcomponentsmodalcustom_id"><code>sosad.components.modal(custom_id)</code></h3>
+<p>Register a modal handler.</p>
+<h2 id="annotations">Annotations</h2>
+<table>
+<thead>
+<tr>
+<th>Annotation</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sosad.annotations.String</code></td>
+<td><code>str</code></td>
+<td>String option</td>
+</tr>
+<tr>
+<td><code>sosad.annotations.Integer</code></td>
+<td><code>int</code></td>
+<td>Integer option</td>
+</tr>
+<tr>
+<td><code>sosad.annotations.Float</code></td>
+<td><code>float</code></td>
+<td>Float option</td>
+</tr>
+<tr>
+<td><code>sosad.annotations.Boolean</code></td>
+<td><code>bool</code></td>
+<td>Boolean option</td>
+</tr>
+<tr>
+<td><code>sosad.annotations.User</code></td>
+<td><code>hikari.User</code></td>
+<td>User option</td>
+</tr>
+<tr>
+<td><code>sosad.annotations.Channel</code></td>
+<td><code>hikari.GuildChannel</code></td>
+<td>Channel option</td>
+</tr>
+<tr>
+<td><code>sosad.annotations.Role</code></td>
+<td><code>hikari.Role</code></td>
+<td>Role option</td>
+</tr>
+<tr>
+<td><code>sosad.annotations.Mentionable</code></td>
+<td><code>hikari.User | hikari.Role</code></td>
+<td>Mentionable</td>
+</tr>
+</tbody>
+</table>
+<h2 id="parameter-options">Parameter options</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nd">@sosad</span><span class="o">.</span><span class="n">slash_command</span><span class="p">(</span><span class="s2">&quot;search&quot;</span><span class="p">,</span> <span class="s2">&quot;Search&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">search</span><span class="p">(</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">ctx</span><span class="p">:</span> <span class="n">sosad</span><span class="o">.</span><span class="n">InteractionContext</span><span class="p">,</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">query</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">sosad</span><span class="o">.</span><span class="n">annotations</span><span class="o">.</span><span class="n">String</span><span class="p">(</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Search query&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>        <span class="n">min_length</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>        <span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>        <span class="n">autocomplete</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="p">),</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">sosad</span><span class="o">.</span><span class="n">annotations</span><span class="o">.</span><span class="n">Integer</span><span class="p">(</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Results limit&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>        <span class="n">min_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>        <span class="n">max_value</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>        <span class="n">default</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>    <span class="p">),</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    <span class="o">...</span>
+</code></pre></div>
 
 
 

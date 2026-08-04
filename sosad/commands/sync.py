@@ -42,14 +42,28 @@ class CommandSyncer:
         self._registry = registry
         self._app_id = app_id
 
+    def _coerce_permissions(self, value: Any) -> int:
+        if isinstance(value, hikari.Permissions):
+            return int(value)
+        if isinstance(value, str):
+            if value.isdigit():
+                return int(value)
+            perm = getattr(hikari.Permissions, value, None)
+            if perm is not None:
+                return int(perm)
+        return int(value)
+
     def _build_command(self, cmd: dict[str, Any]) -> Any:
-        """Convert a command dict to a Hikari SlashCommandBuilder."""
+        """Convert a command dict to a Hikari application-command builder."""
+        command_type = hikari.CommandType(cmd.get("type", hikari.CommandType.SLASH))
+        if command_type != hikari.CommandType.SLASH:
+            return self._rest.context_menu_command_builder(command_type, cmd["name"])
         builder = self._rest.slash_command_builder(
             cmd["name"],
             cmd["description"],
         )
         if "default_member_permissions" in cmd:
-            builder.set_default_member_permissions(int(cmd["default_member_permissions"]))
+            builder.set_default_member_permissions(self._coerce_permissions(cmd["default_member_permissions"]))
         if cmd.get("nsfw"):
             builder.set_is_nsfw(True)
         if "contexts" in cmd:

@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://sosad.cytechteam.site/wiki/guides/context/">
+        <link rel="canonical" href="https://sosad.cytechteam.site/guides/context/">
       
       
         <link rel="prev" href="../commands/">
@@ -687,6 +687,24 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Context
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -703,6 +721,80 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#interactioncontext" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        InteractionContext
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#responsebuilder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ResponseBuilder
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prefixcontext" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PrefixContext
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#componentcontext" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ComponentContext
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discordpy-compat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        discord.py compat
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1305,6 +1397,69 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#interactioncontext" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        InteractionContext
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#responsebuilder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ResponseBuilder
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prefixcontext" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PrefixContext
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#componentcontext" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ComponentContext
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discordpy-compat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        discord.py compat
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1325,7 +1480,68 @@
 
 
 <h1 id="context">Context</h1>
-<p>Documentation coming soon.</p>
+<h2 id="interactioncontext">InteractionContext</h2>
+<p>The context object passed to every command handler.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nd">@sosad</span><span class="o">.</span><span class="n">slash_command</span><span class="p">(</span><span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="s2">&quot;User info&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">info</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">sosad</span><span class="o">.</span><span class="n">InteractionContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="c1"># Basic properties</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">ctx</span><span class="o">.</span><span class="n">author</span>       <span class="c1"># hikari.User</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">ctx</span><span class="o">.</span><span class="n">channel_id</span>   <span class="c1"># int</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">ctx</span><span class="o">.</span><span class="n">guild_id</span>     <span class="c1"># int | None</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">ctx</span><span class="o">.</span><span class="n">interaction</span>  <span class="c1"># hikari.CommandInteraction</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="c1"># Respond</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">respond</span><span class="p">(</span><span class="s2">&quot;Hello!&quot;</span><span class="p">)</span>                 <span class="c1"># Simple</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">respond</span><span class="p">()</span><span class="o">.</span><span class="n">content</span><span class="p">(</span><span class="s2">&quot;Hi!&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">send</span><span class="p">()</span>   <span class="c1"># Builder</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">respond</span><span class="p">(</span><span class="n">embed</span><span class="o">=</span><span class="n">embed</span><span class="p">)</span>              <span class="c1"># With embed</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    <span class="c1"># Edit / delete</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    <span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">edit</span><span class="p">(</span><span class="s2">&quot;Updated!&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    <span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    <span class="c1"># Defer (for long operations)</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    <span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">defer</span><span class="p">()</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    <span class="c1"># ... do work ...</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    <span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">edit</span><span class="p">(</span><span class="s2">&quot;Done!&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    <span class="c1"># Follow-up</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>    <span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">followup</span><span class="p">(</span><span class="s2">&quot;Extra message!&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="responsebuilder">ResponseBuilder</h2>
+<p>The builder pattern for complex responses:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">respond</span><span class="p">()</span> \
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="o">.</span><span class="n">content</span><span class="p">(</span><span class="s2">&quot;Hello!&quot;</span><span class="p">)</span> \
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="o">.</span><span class="n">embed</span><span class="p">(</span><span class="n">embed</span><span class="p">)</span> \
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="o">.</span><span class="n">set_components</span><span class="p">(</span><span class="n">view</span><span class="p">)</span> \
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="o">.</span><span class="n">ephemeral</span><span class="p">()</span> \
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="o">.</span><span class="n">send</span><span class="p">()</span>
+</code></pre></div>
+<h2 id="prefixcontext">PrefixContext</h2>
+<p>For prefix commands:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nd">@prefix_command</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;ping&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">ping</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">sosad</span><span class="o">.</span><span class="n">PrefixContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;Pong!&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">reply</span><span class="p">(</span><span class="s2">&quot;Replied to your message!&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="componentcontext">ComponentContext</h2>
+<p>For component interactions (buttons, selects, modals):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nd">@sosad</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">button</span><span class="p">(</span><span class="s2">&quot;my_button&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_button</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">sosad</span><span class="o">.</span><span class="n">ComponentContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">ctx</span><span class="o">.</span><span class="n">custom_id</span>    <span class="c1"># &quot;my_button&quot;</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">ctx</span><span class="o">.</span><span class="n">values</span>       <span class="c1"># List of selected values (for selects)</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">ctx</span><span class="o">.</span><span class="n">message</span>      <span class="c1"># The original message</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">respond</span><span class="p">(</span><span class="s2">&quot;Clicked!&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="discordpy-compat">discord.py compat</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">bot</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">Bot</span><span class="p">(</span><span class="n">command_prefix</span><span class="o">=</span><span class="s2">&quot;!&quot;</span><span class="p">,</span> <span class="n">intents</span><span class="o">=...</span><span class="p">,</span> <span class="n">token</span><span class="o">=</span><span class="s2">&quot;...&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="nd">@bot</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;info&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">info</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;Hello!&quot;</span><span class="p">)</span>       <span class="c1"># Send message</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">reply</span><span class="p">(</span><span class="s2">&quot;Reply!&quot;</span><span class="p">)</span>      <span class="c1"># Reply to message</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">edit</span><span class="p">(</span><span class="s2">&quot;Edited!&quot;</span><span class="p">)</span>      <span class="c1"># Edit response</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>             <span class="c1"># Delete response</span>
+</code></pre></div>
 
 
 

@@ -216,9 +216,7 @@ class CommandRouter:
             logger.warning("Unknown command: %s", interaction.command_name)
             return
 
-        from sosad.components.base import ComponentContext
-
-        ctx = ComponentContext(
+        ctx = InteractionContext(
             interaction=interaction,
             client=self._client,
             app=self._client.app,

@@ -23,11 +23,20 @@ from typing import Any
 import hikari
 
 __all__ = [
+    "VoiceProtocol",
     "VoiceChannel",
     "VoiceClient",
     "VoiceState",
     "VoiceRegion",
 ]
+
+
+class VoiceProtocol:
+    """Base class accepted by discord.py-compatible voice adapters."""
+
+    def __init__(self, client: Any, channel: Any) -> None:
+        self.client = client
+        self.channel = channel
 
 
 class VoiceChannel:

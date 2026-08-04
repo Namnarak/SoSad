@@ -24,6 +24,9 @@ dev = [
 requires = ["hatchling<1.27"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build.targets.wheel]
+packages = ["sosad", "discord"]
+
 [tool.ruff]
 target-version = "py313"
 line-length = 99

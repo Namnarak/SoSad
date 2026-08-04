@@ -87,9 +87,10 @@ class CommandRegistry:
                 continue
             cmd: dict[str, Any] = {
                 "name": meta.name,
-                "description": meta.description,
-                "type": hikari.CommandType.SLASH,
+                "type": meta.command_type,
             }
+            if meta.command_type == hikari.CommandType.SLASH:
+                cmd["description"] = meta.description
             if meta.default_member_permissions is not None:
                 cmd["default_member_permissions"] = str(meta.default_member_permissions)
             if meta.is_dm_only:
@@ -115,7 +116,7 @@ class CommandRegistry:
                 if opt.autocomplete:
                     opt_data["autocomplete"] = True
                 options.append(opt_data)
-            if options:
+            if options and meta.command_type == hikari.CommandType.SLASH:
                 cmd["options"] = options
             builders.append(cmd)
 

@@ -1,14 +1,19 @@
 # Migration from discord.py
 
-## The 1-line change
+## Drop-in import
 
 ```python
 # BEFORE
 import discord
 
-# AFTER
-import sosad.compat as discord
+# AFTER (install SoSad and keep the original import)
+import discord
 ```
+
+SoSad's wheel provides the top-level `discord` shim, including
+`discord.ext.commands`, `discord.ext.tasks`, `discord.ui`, and
+`discord.app_commands`. `import sosad.compat as discord` remains available as
+an explicit alternative.
 
 ## Full example
 
@@ -30,20 +35,16 @@ import sosad.compat as discord
 === "After (SoSad)"
 
     ```python
-    import sosad.compat as discord
-    import hikari
+    import discord
+    from discord.ext import commands
 
-    bot = discord.Bot(
-        command_prefix="!",
-        intents=hikari.Intents.ALL_UNPRIVILEGED,
-        token="TOKEN",
-    )
+    bot = commands.Bot(command_prefix="!", intents=discord.Intents.default())
 
-    @bot.prefix_command(name="ping")
+    @bot.command(name="ping")
     async def ping(ctx):
         await ctx.send("Pong!")
 
-    bot.run()
+    bot.run("TOKEN")
     ```
 
 ## What changes
@@ -53,11 +54,11 @@ import sosad.compat as discord
 | `discord.Embed` | `discord.Embed` | Same API, `inline=True` default |
 | `discord.Colour` | `discord.Colour` | Same API |
 | `discord.File` | `discord.File` | Re-exported from hikari |
-| `discord.Intents.default()` | `hikari.Intents.ALL_UNPRIVILEGED` | Different intents model |
-| `@bot.command()` | `@bot.prefix_command()` | Must use `name=` |
-| `@bot.slash_command()` | `@bot.command()` | discord.py compat name |
-| `@bot.event` | `@bot.listen()` | Different event system |
-| `bot.run("TOKEN")` | `bot.run("TOKEN")` | Same |
+| `discord.Intents.default()` | `discord.Intents.default()` | Returns `hikari.Intents.ALL_UNPRIVILEGED` |
+| `@bot.command()` | `@bot.command()` | Prefix-compatible command |
+| `@bot.hybrid_command()` | `@bot.hybrid_command()` | Registers a SoSad slash command |
+| `@bot.event` | `@bot.event` | Common gateway events are adapted |
+| `bot.run("TOKEN")` | `bot.run("TOKEN")` | Token may also be passed to `Bot(...)` |
 
 ## What you get for free
 
@@ -85,13 +86,13 @@ import sosad.compat as discord
 | `app_commands.command()` | ✅ | ✅ |
 | `app_commands.describe()` | ✅ | ✅ |
 | `app_commands.choices()` | ✅ | ✅ |
-| `Intents.default()` | ❌ | Use `hikari.Intents.ALL_UNPRIVILEGED` |
+| `Intents.default()` | ✅ | Returns `hikari.Intents.ALL_UNPRIVILEGED` |
 
 ## Checklist
 
-- [ ] Change `import discord` to `import sosad.compat as discord`
-- [ ] Add `import hikari` for intents
-- [ ] Change `discord.Intents.default()` to `hikari.Intents.ALL_UNPRIVILEGED`
-- [ ] Add `name=` to `@bot.command()` → `@bot.prefix_command(name=...)`
+- [ ] Install `sosad` and keep `import discord`
+- [ ] Or change to `import sosad.compat as discord`
+- [ ] Add `import hikari` only when using Hikari-specific APIs
+- [ ] Add `name=` where a command's name differs from its function name
 - [ ] Test all commands
 - [ ] (Optional) Migrate to SoSad-native API for full benefits

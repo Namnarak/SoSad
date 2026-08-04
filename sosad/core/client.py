@@ -147,6 +147,17 @@ class Client(BaseClient):
         router = self._router
         client = self
 
+        # Compatibility Bot uses a StartedEvent listener for discord.py's
+        # ``setup_hook``.  Register those listeners first so extensions are
+        # loaded before the initial application-command sync below.
+        started_handlers = [
+            handler
+            for event_type, handler in self._pending_listeners
+            if event_type is hikari.StartedEvent
+        ]
+        for handler in started_handlers:
+            self._bot.listen(hikari.StartedEvent)(handler)
+
         @self._bot.listen(hikari.StartedEvent)
         async def on_started(event: hikari.StartedEvent) -> None:
             logger.info("SoSad connected as %s", self.bot.get_me())
@@ -167,6 +178,8 @@ class Client(BaseClient):
             )
 
         for event_type, handler in self._pending_listeners:
+            if event_type is hikari.StartedEvent:
+                continue
             self._bot.listen(event_type)(handler)
 
     def _attach_event_dispatcher(self) -> None:

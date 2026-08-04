@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://sosad.cytechteam.site/wiki/guides/migration/">
+        <link rel="canonical" href="https://sosad.cytechteam.site/guides/migration/">
       
       
         <link rel="prev" href="../quickstart/">
@@ -595,10 +595,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-1-line-change" class="md-nav__link">
+  <a href="#drop-in-import" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The 1-line change
+        Drop-in import
       
     </span>
   </a>
@@ -1415,10 +1415,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-1-line-change" class="md-nav__link">
+  <a href="#drop-in-import" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The 1-line change
+        Drop-in import
       
     </span>
   </a>
@@ -1502,13 +1502,17 @@
 
 
 <h1 id="migration-from-discordpy">Migration from discord.py</h1>
-<h2 id="the-1-line-change">The 1-line change</h2>
+<h2 id="drop-in-import">Drop-in import</h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># BEFORE</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">discord</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># AFTER</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="kn">import</span><span class="w"> </span><span class="nn">sosad.compat</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">discord</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># AFTER (install SoSad and keep the original import)</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="kn">import</span><span class="w"> </span><span class="nn">discord</span>
 </code></pre></div>
+<p>SoSad's wheel provides the top-level <code>discord</code> shim, including
+<code>discord.ext.commands</code>, <code>discord.ext.tasks</code>, <code>discord.ui</code>, and
+<code>discord.app_commands</code>. <code>import sosad.compat as discord</code> remains available as
+an explicit alternative.</p>
 <h2 id="full-example">Full example</h2>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Before (discord.py)</label><label for="__tabbed_1_2">After (SoSad)</label></div>
 <div class="tabbed-content">
@@ -1526,20 +1530,16 @@
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">sosad.compat</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">discord</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">hikari</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">discord</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">discord.ext</span><span class="w"> </span><span class="kn">import</span> <span class="n">commands</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">bot</span> <span class="o">=</span> <span class="n">discord</span><span class="o">.</span><span class="n">Bot</span><span class="p">(</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">command_prefix</span><span class="o">=</span><span class="s2">&quot;!&quot;</span><span class="p">,</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">intents</span><span class="o">=</span><span class="n">hikari</span><span class="o">.</span><span class="n">Intents</span><span class="o">.</span><span class="n">ALL_UNPRIVILEGED</span><span class="p">,</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">token</span><span class="o">=</span><span class="s2">&quot;TOKEN&quot;</span><span class="p">,</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="p">)</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">bot</span> <span class="o">=</span> <span class="n">commands</span><span class="o">.</span><span class="n">Bot</span><span class="p">(</span><span class="n">command_prefix</span><span class="o">=</span><span class="s2">&quot;!&quot;</span><span class="p">,</span> <span class="n">intents</span><span class="o">=</span><span class="n">discord</span><span class="o">.</span><span class="n">Intents</span><span class="o">.</span><span class="n">default</span><span class="p">())</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="nd">@bot</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;ping&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">ping</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;Pong!&quot;</span><span class="p">)</span>
 <a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="nd">@bot</span><span class="o">.</span><span class="n">prefix_command</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;ping&quot;</span><span class="p">)</span>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">ping</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;Pong!&quot;</span><span class="p">)</span>
-<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>
-<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="n">bot</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="n">bot</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;TOKEN&quot;</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
@@ -1571,28 +1571,28 @@
 </tr>
 <tr>
 <td><code>discord.Intents.default()</code></td>
-<td><code>hikari.Intents.ALL_UNPRIVILEGED</code></td>
-<td>Different intents model</td>
+<td><code>discord.Intents.default()</code></td>
+<td>Returns <code>hikari.Intents.ALL_UNPRIVILEGED</code></td>
 </tr>
 <tr>
 <td><code>@bot.command()</code></td>
-<td><code>@bot.prefix_command()</code></td>
-<td>Must use <code>name=</code></td>
+<td><code>@bot.command()</code></td>
+<td>Prefix-compatible command</td>
 </tr>
 <tr>
-<td><code>@bot.slash_command()</code></td>
-<td><code>@bot.command()</code></td>
-<td>discord.py compat name</td>
+<td><code>@bot.hybrid_command()</code></td>
+<td><code>@bot.hybrid_command()</code></td>
+<td>Registers a SoSad slash command</td>
 </tr>
 <tr>
 <td><code>@bot.event</code></td>
-<td><code>@bot.listen()</code></td>
-<td>Different event system</td>
+<td><code>@bot.event</code></td>
+<td>Common gateway events are adapted</td>
 </tr>
 <tr>
 <td><code>bot.run("TOKEN")</code></td>
 <td><code>bot.run("TOKEN")</code></td>
-<td>Same</td>
+<td>Token may also be passed to <code>Bot(...)</code></td>
 </tr>
 </tbody>
 </table>
@@ -1678,17 +1678,17 @@
 </tr>
 <tr>
 <td><code>Intents.default()</code></td>
-<td>❌</td>
-<td>Use <code>hikari.Intents.ALL_UNPRIVILEGED</code></td>
+<td>✅</td>
+<td>Returns <code>hikari.Intents.ALL_UNPRIVILEGED</code></td>
 </tr>
 </tbody>
 </table>
 <h2 id="checklist">Checklist</h2>
 <ul>
-<li>[ ] Change <code>import discord</code> to <code>import sosad.compat as discord</code></li>
-<li>[ ] Add <code>import hikari</code> for intents</li>
-<li>[ ] Change <code>discord.Intents.default()</code> to <code>hikari.Intents.ALL_UNPRIVILEGED</code></li>
-<li>[ ] Add <code>name=</code> to <code>@bot.command()</code> → <code>@bot.prefix_command(name=...)</code></li>
+<li>[ ] Install <code>sosad</code> and keep <code>import discord</code></li>
+<li>[ ] Or change to <code>import sosad.compat as discord</code></li>
+<li>[ ] Add <code>import hikari</code> only when using Hikari-specific APIs</li>
+<li>[ ] Add <code>name=</code> where a command's name differs from its function name</li>
 <li>[ ] Test all commands</li>
 <li>[ ] (Optional) Migrate to SoSad-native API for full benefits</li>
 </ul>
