@@ -3,6 +3,8 @@
 
 <a href="https://github.com/Namnarak/SoSad"><img width="100%" alt="SoSad banner" src="https://capsule-render.vercel.app/api?type=waving&color=0:160E2D,100:7C3AED&height=210&section=header&text=SoSad&fontSize=43&fontColor=ffffff&fontAlignY=36&desc=Drop%20in.%20Scale%20up.&descAlignY=59&descSize=16"></a>
 
+<p><img src="assets/images/favicon.png" alt="SoSad logo" width="136" /></p>
+
 <img alt="PROJECT: Discord Framework" src="https://img.shields.io/badge/PROJECT-Discord%20Framework-7C3AED?style=flat-square&labelColor=160E2D"> <img alt="STACK: Python · Hikari" src="https://img.shields.io/badge/STACK-Python%20%C2%B7%20Hikari-7C3AED?style=flat-square&labelColor=160E2D">
 
 <p><strong>Drop in. Scale up.</strong></p>
@@ -382,3 +384,19 @@ config = Config()
 ## License
 
 MIT
+
+---
+
+<!-- CYTECH_STAR_HISTORY:START -->
+
+## Star History
+
+<a href="https://star-history.dera.page/#Namnarak/SoSad&type=date&legend=top-left">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=Namnarak/SoSad&type=date&legend=top-left&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=Namnarak/SoSad&type=date&legend=top-left" />
+    <img alt="GitHub star history for Namnarak/SoSad" src="https://star-history.dera.page/svg?repos=Namnarak/SoSad&type=date&legend=top-left" width="800" />
+  </picture>
+</a>
+
+<!-- CYTECH_STAR_HISTORY:END -->
