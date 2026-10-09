@@ -1,4 +1,18 @@
-# SoSad
+<!-- CYTECH_README_REFRESH:START -->
+<div align="center">
+
+<a href="https://github.com/Namnarak/SoSad"><img width="100%" alt="SoSad banner" src="https://capsule-render.vercel.app/api?type=waving&color=0:160E2D,100:7C3AED&height=210&section=header&text=SoSad&fontSize=43&fontColor=ffffff&fontAlignY=36&desc=Drop%20in.%20Scale%20up.&descAlignY=59&descSize=16"></a>
+
+<img alt="PROJECT: Discord Framework" src="https://img.shields.io/badge/PROJECT-Discord%20Framework-7C3AED?style=flat-square&labelColor=160E2D"> <img alt="STACK: Python · Hikari" src="https://img.shields.io/badge/STACK-Python%20%C2%B7%20Hikari-7C3AED?style=flat-square&labelColor=160E2D">
+
+<p><strong>Drop in. Scale up.</strong></p>
+
+<a href="https://github.com/Namnarak/SoSad/releases">Releases</a> · <a href="https://github.com/Namnarak/SoSad/issues">Issues</a> · <a href="https://github.com/Namnarak/SoSad">Source</a>
+
+</div>
+<!-- CYTECH_README_REFRESH:END -->
+
+---
 
 **Drop in. Scale up.**
 
